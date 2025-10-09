@@ -9,10 +9,13 @@
 - **Deploy Process**: Git commit and push to `main` branch
 
 ### Backend (Google Apps Script Project)
-- **Project ID**: TBD (to be created with `clasp create`)
-- **File**: `Code.gs` (single file, no folders)
-- **API URL**: TBD (generated after deployment)
-- **Deploy Process**: Use `clasp push` and `clasp deploy`
+- **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
+- **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
+- **File**: `Code.js` (single file, plus appsscript.json)
+- **API URL**: https://script.google.com/macros/s/AKfycbwJnC297DvdBWdW9dHTgxC98D2hpiDs8pY_geAp8-eitlkNxp6m33et2dy3aVmTG9j1Bg/exec
+- **Deployment**: @1 (v2.0.0 - 2025-10-09)
+- **Timezone**: America/Chicago
+- **Deploy Process**: Use `clasp push` (only pushes Code.js + appsscript.json via .claspignore)
 
 ## V2 JSON Format Specification
 
