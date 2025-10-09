@@ -106,16 +106,26 @@ class Dashboard {
      * Render an occasion row (inline version for dashboard)
      */
     renderOccasionRowInline(occasion) {
+        // Occasion data structure from API has nested 'occasion' object
+        const occasionData = occasion.occasion || {};
+
         const formattedDate = new Date(occasion.date).toLocaleDateString();
-        const sessionTypeName = CONFIG.SESSION_TYPES ? (CONFIG.SESSION_TYPES[occasion.sessionType] || occasion.sessionType) : occasion.sessionType;
+        const sessionType = occasion.session || occasionData.sessionType || 'Unknown';
+        const sessionTypeName = CONFIG.SESSION_TYPES ? (CONFIG.SESSION_TYPES[sessionType] || sessionType) : sessionType;
+        const lionInCharge = occasionData.lionInCharge || 'N/A';
+        const totalPlayers = occasionData.totalPlayers || 0;
+
+        // Revenue from financial data if available
+        const financial = occasion.financial || occasionData.financial || {};
+        const totalRevenue = financial.totalSales || financial.grossSales || 0;
 
         return `
             <tr>
                 <td><strong>${formattedDate}</strong></td>
                 <td>${sessionTypeName}</td>
-                <td>${occasion.lionInCharge || 'N/A'}</td>
-                <td>${occasion.totalPlayers || 0}</td>
-                <td>$${(occasion.totalRevenue || 0).toLocaleString()}</td>
+                <td>${lionInCharge}</td>
+                <td>${totalPlayers}</td>
+                <td>$${totalRevenue.toLocaleString()}</td>
                 <td><span class="status ${occasion.status.toLowerCase()}">${occasion.status}</span></td>
                 <td>
                     <div class="btn-group">
