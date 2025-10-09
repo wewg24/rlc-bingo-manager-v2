@@ -165,11 +165,89 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.1
+- **Frontend**: v2.3.3
 - **Backend**: v2.0.0 (no changes needed)
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-09)
+
+### v2.3.3 - Complete Admin CRUD Implementation
+
+#### All Admin Functions Now Fully Operational
+Completed implementation of View, Edit, and Delete functions for occasion management in admin dashboard.
+
+#### Features Implemented
+
+**1. View Occasion (viewOccasion)**
+- Loads full occasion data from server via JSONP
+- Modal displays comprehensive occasion details:
+  - **Occasion Info**: Date, Session Type, Lion in Charge, Pull-Tab Worker, Total Players, Birthday BOGOs, Status
+  - **Financial Summary**: Bingo/Pull-Tab/Total Sales, Prizes, Net Profit
+- Read-only display with close button
+- Professional table layout with color-coded sections
+
+**2. Edit Occasion (editOccasion) - Enhanced**
+- Modal now has close button (X) in header
+- Readonly fields (ID, Date, Session) styled with gray background
+- Only Status field is editable (dropdown: draft/submitted/finalized)
+- Auto-focus on Status field for quick editing
+- Helpful hint: "💡 Change to 'Draft' to allow editing in mobile interface"
+- Updates occasion status via backend API
+- Refreshes table after successful save
+
+**3. Delete Occasion (deleteOccasion) - New Implementation**
+- Confirmation dialog shows occasion date and ID
+- Clear warning: "⚠️ This action CANNOT be undone!"
+- User can cancel before deletion
+- Calls backend `deleteOccasion` API action
+- Refreshes both occasions table and dashboard
+- Success/error notifications
+
+**4. Modal System CSS (admin.css)**
+- Professional modal overlay with semi-transparent backdrop
+- Smooth animations (fade-in, slide-in)
+- Responsive sizing (max 90% viewport)
+- Scrollable modal body for long content
+- Close button with hover effect
+- Details table styling for view mode
+- Form styling for edit mode
+- Full dark mode support
+- Z-index 9999 for proper layering
+
+#### Files Modified
+- **js/ui-components.js** (lines 698-978): Implemented viewOccasion(), enhanced editOccasion(), implemented deleteOccasion()
+- **css/admin.css** (lines 696-864): Complete modal system styling
+
+#### User Experience Improvements
+- All action buttons now work as expected
+- Professional modal dialogs replace browser alerts
+- Clear visual distinction between readonly and editable fields
+- Consistent styling across all modals
+- Smooth animations for better UX
+
+### v2.3.2 - Admin Dashboard Data Display Fix
+
+#### Issues Fixed
+Admin dashboard and Occasions tab were displaying incorrect data despite API returning correct values.
+
+**Symptoms:**
+- Date showing as 7/13 instead of 7/14
+- Session Type showing "Unknown" instead of "6-2 (2nd Monday)"
+- Lion in Charge showing "N/A" instead of "Wayne Parry"
+- Players showing 0 instead of 85
+- Revenue showing $0 instead of actual values
+
+**Root Cause:**
+API returns nested data structure where detailed information is in `occasion.occasion.*` but rendering code was reading from top level `occasion.*`.
+
+**Changes:**
+- **dashboard.js** `renderOccasionRowInline()`: Read from `occasion.occasion.*` for nested data
+- **ui-components.js** `renderOccasionRow()`: Same fix for Occasions tab
+- Both now correctly extract: `sessionType`, `lionInCharge`, `totalPlayers`, and revenue from `financial.totalSales`
+
+**Files Modified:**
+- js/dashboard.js (lines 108-139): Fixed data extraction from nested structure
+- js/ui-components.js (lines 265-296): Fixed data extraction from nested structure
 
 ### v2.3.1 - Critical Bug Fixes for Occasion Entry
 
