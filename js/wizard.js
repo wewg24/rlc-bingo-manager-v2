@@ -2533,7 +2533,7 @@ function calculateFinalTotals() {
     const actualProfit = totalNetDeposit; // Alias for Review tab
     const idealProfit = totalNetProfit; // Alias for Review tab
     const overShort = totalOverShort; // Alias for Review tab
-    const totalDeposit = totalActualDeposit; // Alias for Review tab
+    totalDeposit = totalActualDeposit; // Update existing variable (declared at line 2431)
 
     // Save V2 Enhanced Financial Data (30+ fields)
     if (window.app && window.app.data) {
