@@ -532,8 +532,20 @@ function generatePullTabsSection(appData) {
 }
 
 function generateMoneyCountSection(appData) {
-    const bingo = appData.moneyCount?.bingo || {};
-    const pullTab = appData.moneyCount?.pullTab || {};
+    // Use V2 enhanced financial data for accurate money count
+    const financial = appData.financial || {};
+
+    // Bingo drawer calculation
+    const bingoStartupCash = financial.bingoStartupCash || 1000;
+    const bingoDeposit = financial.bingoDeposit || 0;
+    const bingoChecks = appData.moneyCount?.bingo?.checks || 0;
+    const bingoCashTotal = bingoDeposit - bingoChecks;
+
+    // Pull-Tab drawer calculation
+    const pullTabStartupCash = 0; // Pull-tabs don't have startup cash
+    const pullTabDeposit = financial.pullTabNetDeposit || 0;
+    const pullTabChecks = appData.moneyCount?.pullTab?.checks || appData.moneyCount?.pulltab?.checks || 0;
+    const pullTabCashTotal = pullTabDeposit - pullTabChecks;
 
     return `
     <div class="section">
@@ -543,19 +555,19 @@ function generateMoneyCountSection(appData) {
             <div>
                 <h4 style="color: #34495e; margin-bottom: 0.5rem;">Bingo Drawer</h4>
                 <table>
-                    <tr><td>Starting Bank</td><td class="text-right">${formatCurrency(bingo.startingBank || 0)}</td></tr>
-                    <tr><td>Cash Total</td><td class="text-right">${formatCurrency(bingo.cashTotal || 0)}</td></tr>
-                    <tr><td>Checks</td><td class="text-right">${formatCurrency(bingo.checks || 0)}</td></tr>
-                    <tr class="total-row"><td>Drawer Total</td><td class="text-right">${formatCurrency(bingo.drawerTotal || 0)}</td></tr>
+                    <tr><td>Starting Bank</td><td class="text-right">${formatCurrency(bingoStartupCash)}</td></tr>
+                    <tr><td>Cash Total</td><td class="text-right">${formatCurrency(bingoCashTotal)}</td></tr>
+                    <tr><td>Checks</td><td class="text-right">${formatCurrency(bingoChecks)}</td></tr>
+                    <tr class="total-row"><td>Drawer Total</td><td class="text-right">${formatCurrency(bingoDeposit)}</td></tr>
                 </table>
             </div>
             <div>
                 <h4 style="color: #34495e; margin-bottom: 0.5rem;">Pull-Tab Drawer</h4>
                 <table>
-                    <tr><td>Starting Bank</td><td class="text-right">${formatCurrency(pullTab.startingBank || 0)}</td></tr>
-                    <tr><td>Cash Total</td><td class="text-right">${formatCurrency(pullTab.cashTotal || 0)}</td></tr>
-                    <tr><td>Checks</td><td class="text-right">${formatCurrency(pullTab.checks || 0)}</td></tr>
-                    <tr class="total-row"><td>Drawer Total</td><td class="text-right">${formatCurrency(pullTab.drawerTotal || 0)}</td></tr>
+                    <tr><td>Starting Bank</td><td class="text-right">${formatCurrency(pullTabStartupCash)}</td></tr>
+                    <tr><td>Cash Total</td><td class="text-right">${formatCurrency(pullTabCashTotal)}</td></tr>
+                    <tr><td>Checks</td><td class="text-right">${formatCurrency(pullTabChecks)}</td></tr>
+                    <tr class="total-row"><td>Drawer Total</td><td class="text-right">${formatCurrency(pullTabDeposit)}</td></tr>
                 </table>
             </div>
         </div>
