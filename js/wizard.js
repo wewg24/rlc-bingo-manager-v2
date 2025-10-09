@@ -288,6 +288,13 @@ function loadOccasionData(data) {
 
     if (!data) return;
 
+    // V2 Enhancement: Convert V1 format to V2 if needed
+    if (typeof window.isV1Format === 'function' && window.isV1Format(data)) {
+        console.log('🔄 V1 format detected - converting to V2');
+        data = window.convertV1ToV2(data);
+        console.log('✅ Converted to V2 format:', data);
+    }
+
     // Store in app.data FIRST - this is critical for loadStepData() to work
     if (window.app) {
         window.app.data = {...data};
@@ -300,14 +307,17 @@ function loadOccasionData(data) {
         if (data.occasion.lionInCharge) document.getElementById('lion-charge').value = data.occasion.lionInCharge;
         if (data.occasion.lionPullTabs) document.getElementById('pt-lion').value = data.occasion.lionPullTabs;
         if (data.occasion.totalPlayers) document.getElementById('total-people').value = data.occasion.totalPlayers;
-        if (data.occasion.birthdays) document.getElementById('birthdays').value = data.occasion.birthdays;
+        // V2: Handle both birthdays (V1) and birthdayBOGOs (V2)
+        const birthdayValue = data.occasion.birthdayBOGOs || data.occasion.birthdays || 0;
+        if (birthdayValue) document.getElementById('birthdays').value = birthdayValue;
     }
 
-    // Load Progressive data
-    if (data.progressive) {
-        if (data.progressive.jackpot) document.getElementById('prog-jackpot').value = data.progressive.jackpot;
-        if (data.progressive.ballsNeeded) document.getElementById('prog-balls').value = data.progressive.ballsNeeded;
-        if (data.progressive.consolation) document.getElementById('prog-consolation').value = data.progressive.consolation;
+    // Load Progressive data (V2: from occasion.progressive, V1: from root progressive)
+    const progressive = data.occasion?.progressive || data.progressive;
+    if (progressive) {
+        if (progressive.jackpot) document.getElementById('prog-jackpot').value = progressive.jackpot;
+        if (progressive.ballsNeeded) document.getElementById('prog-balls').value = progressive.ballsNeeded;
+        if (progressive.consolation) document.getElementById('prog-consolation').value = progressive.consolation;
         // actualBalls, actualPrize, and checkPayment are now handled in the Game Results tab
     }
 

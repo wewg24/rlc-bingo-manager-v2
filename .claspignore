@@ -1,0 +1,4 @@
+# Exclude all frontend files from clasp push
+**/**
+!Code.js
+!appsscript.json

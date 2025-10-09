@@ -2,7 +2,7 @@
 // V2.0.0 - Enhanced with new financial tracking structure
 
 window.CONFIG = {
-    API_URL: '', // Will be set after backend deployment
+    API_URL: 'https://script.google.com/macros/s/AKfycbwJnC297DvdBWdW9dHTgxC98D2hpiDs8pY_geAp8-eitlkNxp6m33et2dy3aVmTG9j1Bg/exec',
     APP_NAME: 'RLC Bingo Manager V2',
     VERSION: '2.0.0',
 
