@@ -165,11 +165,53 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.1.0
+- **Frontend**: v2.2.0
 - **Backend**: v2.0.0 (no changes needed)
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-09)
+
+### v2.2.0 - V2 Enhanced Financial Format (31 Fields)
+
+#### Full Implementation of V2 Financial Structure
+Completely rewrote `calculateFinalTotals()` to save occasion data with enhanced V2 financial format (31 fields vs 12 in V1).
+
+#### New Financial Fields
+**Bingo Section (10 fields)**:
+- `bingoElectronicSales`, `bingoMiscellaneousSales`, `bingoPaperSales`
+- `bingoSales` (sum of above three)
+- `bingoPrizesPaid`, `bingoNetProfit`
+- `bingoDeposit`, `bingoStartupCash` (1000), `bingoNetDeposit`
+- `bingoOverShort` (actual vs ideal profit)
+
+**Pull-Tab Section (10 fields)**:
+- `pullTabRegularSales`, `pullTabSpecialSales`, `pullTabSales` (sum)
+- `pullTabRegularPrizesPaid`, `pullTabSpecialPrizesPaid`, `pullTabPrizes` (sum)
+- `pullTabPrizesPaidByCheck`, `pulltabNetProfit`
+- `pullTabNetDeposit`, `pullTabOverShort`
+
+**Totals Section (11 fields)**:
+- `totalSales`, `totalPrizesPaid`, `totalPrizesPaidByCheck`, `totalNetProfit`
+- `totalCurrencyDeposit`, `totalCoinDeposit`, `totalCheckDeposit`
+- `totalActualDeposit` (sum of currency + coins + checks)
+- `totalNetDeposit` (actual - startup)
+- `totalOverShort` (net deposit - net profit)
+
+#### Backward Compatibility
+Included legacy V1 field names for backward compatibility with V1 format consumers.
+
+#### Key Calculations
+- **Per-Category Over/Short**: Separate calculations for Bingo and Pull-Tabs
+- **Deposit Breakdown**: Currency, coins, and checks tracked separately
+- **Net Deposits**: Actual deposits minus startup cash
+- **Regular vs Special**: Pull-tabs separated into regular games and special events
+
+### v2.1.1 - Pull-Tab Drawer Display Fix
+
+#### Bug Fixes
+- Fixed Pull-Tab drawer total showing $0.00 on Review tab
+- Added `calculatePullTabDrawer()` calls in `loadMoneyCount()` and `loadReviewData()`
+- Pull-Tab denominations now display correctly when loading saved occasions
 
 ### v2.1.0 - Complete Draft/Submitted/Finalized Workflow
 

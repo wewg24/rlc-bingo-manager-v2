@@ -2433,33 +2433,141 @@ function calculateFinalTotals() {
         });
     }
 
-    // Calculate derived totals
-    const grossSales = totalBingoSales + totalPullTabSales + totalSESales;
-    const totalPrizes = totalBingoPrizes + totalPullTabPrizes + totalSEPrizes;
-    const actualProfit = totalDeposit - 1000; // Less startup of $1000
-    const idealProfit = grossSales - totalPrizes;
-    const overShort = actualProfit - idealProfit;
+    // ==========================================
+    // V2 ENHANCED FINANCIAL CALCULATIONS
+    // ==========================================
 
-    // Save financial data to window.app.data
+    // Extract money count details for deposit breakdown
+    const bingoDrawer = appData.moneyCount?.bingo || {};
+    const pullTabDrawer = appData.moneyCount?.pulltab || appData.moneyCount?.pullTab || {};
+
+    // Calculate bingo drawer total and breakdown
+    let bingoDeposit = 0;
+    let bingoCurrency = 0;
+    let bingoCoins = 0;
+    let bingoChecks = 0;
+
+    Object.entries(bingoDrawer).forEach(([key, amount]) => {
+        const value = parseFloat(amount) || 0;
+        if (key === 'coins') {
+            bingoCoins += value;
+        } else if (key === 'checks') {
+            bingoChecks += value;
+        } else if (key !== 'total') {
+            bingoCurrency += value;
+        }
+    });
+    bingoDeposit = bingoCurrency + bingoCoins + bingoChecks;
+
+    // Calculate pull-tab drawer total and breakdown
+    let pullTabDeposit = 0;
+    let pullTabCurrency = 0;
+    let pullTabCoins = 0;
+    let pullTabChecks = 0;
+
+    Object.entries(pullTabDrawer).forEach(([key, amount]) => {
+        const value = parseFloat(amount) || 0;
+        if (key === 'coins') {
+            pullTabCoins += value;
+        } else if (key === 'checks') {
+            pullTabChecks += value;
+        } else if (key !== 'total') {
+            pullTabCurrency += value;
+        }
+    });
+    pullTabDeposit = pullTabCurrency + pullTabCoins + pullTabChecks;
+
+    // Calculate total deposit breakdown
+    const totalCurrencyDeposit = bingoCurrency + pullTabCurrency;
+    const totalCoinDeposit = bingoCoins + pullTabCoins;
+    const totalCheckDeposit = bingoChecks + pullTabChecks;
+    const totalActualDeposit = totalCurrencyDeposit + totalCoinDeposit + totalCheckDeposit;
+
+    // Bingo financial calculations
+    const bingoSales = totalBingoSales;
+    const bingoPrizesPaid = totalBingoPrizes;
+    const bingoNetProfit = bingoSales - bingoPrizesPaid;
+    const bingoStartupCash = 1000; // Standard startup
+    const bingoNetDeposit = bingoDeposit - bingoStartupCash;
+    const bingoIdealProfit = bingoSales - bingoPrizesPaid;
+    const bingoOverShort = bingoNetDeposit - bingoIdealProfit;
+
+    // Pull-Tab financial calculations (separated regular/special)
+    const pullTabRegularSales = totalPullTabSales;
+    const pullTabSpecialSales = totalSESales;
+    const pullTabSales = pullTabRegularSales + pullTabSpecialSales;
+    const pullTabRegularPrizesPaid = totalPullTabPrizes;
+    const pullTabSpecialPrizesPaid = totalSEPrizes;
+    const pullTabPrizes = pullTabRegularPrizesPaid + pullTabSpecialPrizesPaid;
+    const pullTabPrizesPaidByCheck = 0; // Pull-tabs typically paid in cash
+    const pulltabNetProfit = pullTabSales - pullTabPrizes;
+    const pullTabNetDeposit = pullTabDeposit; // No startup for pull-tabs
+    const pullTabIdealProfit = pullTabSales - pullTabPrizes;
+    const pullTabOverShort = pullTabNetDeposit - pullTabIdealProfit;
+
+    // Grand totals
+    const totalSales = bingoSales + pullTabSales;
+    const totalPrizesPaid = bingoPrizesPaid + pullTabPrizes;
+    const totalPrizesPaidByCheck = prizesPaidByCheck; // From games check payments
+    const totalNetProfit = totalSales - totalPrizesPaid;
+    const totalNetDeposit = totalActualDeposit - bingoStartupCash;
+    const totalOverShort = totalNetDeposit - totalNetProfit;
+
+    // Save V2 Enhanced Financial Data (30+ fields)
     if (window.app && window.app.data) {
         window.app.data.financial = {
+            // Bingo Section (10 fields)
+            bingoElectronicSales: totalElectronicSales,
+            bingoMiscellaneousSales: totalMiscellaneousSales,
+            bingoPaperSales: totalPaperSales,
+            bingoSales: bingoSales,
+            bingoPrizesPaid: bingoPrizesPaid,
+            bingoNetProfit: bingoNetProfit,
+            bingoDeposit: bingoDeposit,
+            bingoStartupCash: bingoStartupCash,
+            bingoNetDeposit: bingoNetDeposit,
+            bingoOverShort: bingoOverShort,
+
+            // Pull-Tab Section (10 fields - Regular/Special separated)
+            pullTabRegularSales: pullTabRegularSales,
+            pullTabSpecialSales: pullTabSpecialSales,
+            pullTabSales: pullTabSales,
+            pullTabRegularPrizesPaid: pullTabRegularPrizesPaid,
+            pullTabSpecialPrizesPaid: pullTabSpecialPrizesPaid,
+            pullTabPrizes: pullTabPrizes,
+            pullTabPrizesPaidByCheck: pullTabPrizesPaidByCheck,
+            pulltabNetProfit: pulltabNetProfit,
+            pullTabNetDeposit: pullTabNetDeposit,
+            pullTabOverShort: pullTabOverShort,
+
+            // Totals Section (11 fields)
+            totalSales: totalSales,
+            totalPrizesPaid: totalPrizesPaid,
+            totalPrizesPaidByCheck: totalPrizesPaidByCheck,
+            totalNetProfit: totalNetProfit,
+            totalCurrencyDeposit: totalCurrencyDeposit,
+            totalCoinDeposit: totalCoinDeposit,
+            totalCheckDeposit: totalCheckDeposit,
+            totalActualDeposit: totalActualDeposit,
+            totalNetDeposit: totalNetDeposit,
+            totalOverShort: totalOverShort,
+
+            // Legacy V1 fields for backward compatibility
             totalElectronicSales: totalElectronicSales,
             totalMiscellaneousSales: totalMiscellaneousSales,
             totalPaperSales: totalPaperSales,
-            totalBingoSales: totalBingoSales,  // Sum of Electronic + Misc + Paper
-            pullTabSales: totalPullTabSales,
-            specialEventSales: totalSESales,
-            grossSales: grossSales,
-            bingoPrizesPaid: totalBingoPrizes,
+            totalBingoSales: totalBingoSales,
             pullTabPrizesPaid: totalPullTabPrizes,
+            specialEventSales: totalSESales,
             specialEventPrizesPaid: totalSEPrizes,
-            totalPrizesPaid: totalPrizes,
-            prizesPaidByCheck: prizesPaidByCheck,
-            idealProfit: idealProfit,
-            overShort: overShort,
-            totalCashDeposit: totalDeposit,
-            actualProfit: actualProfit
+            grossSales: totalSales,
+            idealProfit: totalNetProfit,
+            overShort: totalOverShort,
+            totalCashDeposit: totalActualDeposit,
+            actualProfit: totalNetDeposit
         };
+
+        console.log('💰 V2 Enhanced Financial Data Saved:', window.app.data.financial);
     }
 
     // Update the Review & Submit summary fields
