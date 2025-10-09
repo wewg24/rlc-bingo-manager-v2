@@ -170,6 +170,154 @@ function saveDraft() {
 window.saveDraft = saveDraft;
 
 // ============================================
+// SAVE TO BACKEND (SERVER)
+// ============================================
+
+async function saveToBackend() {
+    console.log('💾 Saving to backend...');
+
+    // Show loading spinner
+    if (typeof showLoading === 'function') {
+        showLoading('Saving to server...');
+    }
+
+    try {
+        // Save current tab first
+        const currentTab = window.app?.currentStep || 1;
+
+        // Save ALL tabs' data by calling save for each step
+        console.log('Saving all tabs data...');
+        const originalStep = window.app.currentStep;
+
+        // Save each tab's data
+        [1, 2, 3, 4, 5].forEach(step => {
+            window.app.currentStep = step;
+            saveStepData();
+        });
+
+        // Restore current step
+        window.app.currentStep = originalStep;
+
+        // Get occasion date for validation
+        const occasionDate = document.getElementById('occasion-date')?.value;
+
+        if (!occasionDate) {
+            if (typeof hideLoading === 'function') {
+                hideLoading();
+            }
+            alert('Please select a date before saving to server');
+            return;
+        }
+
+        // Check if occasion already exists on backend
+        console.log('Checking for existing occasion on backend...');
+        const checkUrl = `${CONFIG.API_URL}?action=checkOccasionByDate&date=${occasionDate}`;
+
+        // Use JSONP to check
+        const callbackName = 'saveCheckCallback_' + Date.now();
+        let existingStatus = null;
+
+        await new Promise((resolve, reject) => {
+            window[callbackName] = function(response) {
+                if (response.exists && response.status) {
+                    existingStatus = response.status;
+                }
+                delete window[callbackName];
+                resolve();
+            };
+
+            const script = document.createElement('script');
+            script.src = `${checkUrl}&callback=${callbackName}`;
+            script.onerror = () => {
+                delete window[callbackName];
+                resolve(); // Continue even if check fails
+            };
+            document.head.appendChild(script);
+
+            // Cleanup after 5 seconds
+            setTimeout(() => {
+                if (window[callbackName]) {
+                    delete window[callbackName];
+                    resolve();
+                }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 5000);
+        });
+
+        // Warn if overwriting non-draft
+        if (existingStatus && existingStatus !== 'draft') {
+            const confirmOverwrite = confirm(
+                `⚠️ An occasion for ${occasionDate} already exists with status "${existingStatus}".\n\n` +
+                `Saving will overwrite it. Continue?`
+            );
+
+            if (!confirmOverwrite) {
+                if (typeof hideLoading === 'function') {
+                    hideLoading();
+                }
+                return;
+            }
+        }
+
+        // Prepare save data with explicit draft status
+        const saveData = {
+            ...window.app.data,
+            status: 'draft',  // Explicitly set as draft
+            modified: new Date().toISOString()
+        };
+
+        console.log('Saving to backend with data:', saveData);
+
+        // Submit to backend
+        const response = await fetch(CONFIG.API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                action: 'saveOccasion',
+                data: JSON.stringify(saveData)
+            })
+        });
+
+        const result = await response.json();
+
+        // Hide loading spinner
+        if (typeof hideLoading === 'function') {
+            hideLoading();
+        }
+
+        if (result.success) {
+            // Show success notification
+            if (window.showNotification) {
+                window.showNotification('✅ Saved to server successfully!', 'success');
+            } else {
+                alert('✅ Saved to server successfully!');
+            }
+
+            console.log('Backend save successful:', result);
+        } else {
+            throw new Error(result.message || 'Save failed');
+        }
+
+    } catch (error) {
+        console.error('Error saving to backend:', error);
+
+        // Hide loading spinner on error
+        if (typeof hideLoading === 'function') {
+            hideLoading();
+        }
+
+        alert('❌ Error saving to server: ' + error.message);
+    }
+}
+
+// Make saveToBackend globally accessible
+window.saveToBackend = saveToBackend;
+
+// ============================================
 // CHECK EXISTING OCCASION ON DATE CHANGE
 // ============================================
 
@@ -2403,6 +2551,7 @@ async function submitOccasion() {
         // Prepare submission data
         const submissionData = {
             ...window.app.data,
+            status: 'submitted',  // Mark as submitted
             submittedAt: new Date().toISOString(),
             submittedBy: window.app.data.occasion.lionInCharge
         };
