@@ -84,6 +84,7 @@ class ApiService {
 
                 // Get session type with robust property access
                 const sessionTypeValue = this.adminInterface.cleanString(
+                    occasion.session ||  // API returns 'session'
                     occasion.sessionType ||
                     occasion['Session Type'] ||
                     occasion['sessionType']
@@ -103,7 +104,10 @@ class ApiService {
                 }
 
                 // Get lion in charge with robust property access
+                // Check nested occasion.occasion object first
+                const occasionData = occasion.occasion || {};
                 const lionInCharge = this.adminInterface.cleanString(
+                    occasionData.lionInCharge ||  // Nested structure
                     occasion.lionInCharge ||
                     occasion['Lion in Charge'] ||
                     occasion['lionInCharge']
@@ -120,19 +124,27 @@ class ApiService {
                     occasion['status']
                 ) || 'Draft';
 
+                // Get total players from nested structure
+                const totalPlayers = parseInt(
+                    occasionData.totalPlayers ||  // Nested structure
+                    occasion.totalPlayers ||
+                    occasion['Total Players'] ||
+                    occasion['totalPlayers']
+                ) || 0;
+
+                // Get financial data from nested structure
+                const financial = occasion.financial || {};
+                const totalRevenue = financial.totalSales || financial.grossSales || 0;
+                const netProfit = financial.totalNetProfit || financial.idealProfit || 0;
+
                 return {
                     id: occasionId,
                     date: validatedDate,
                     sessionType: sessionTypeKey,
                     lionInCharge: lionInCharge,
-                    totalPlayers: parseInt(
-                        occasion.totalPlayers ||
-                        occasion['Total Players'] ||
-                        occasion['totalPlayers']
-                    ) || 0,
-                    // For now, use 0 for revenue/profit until we have those fields calculated
-                    totalRevenue: 0,
-                    netProfit: 0,
+                    totalPlayers: totalPlayers,
+                    totalRevenue: totalRevenue,
+                    netProfit: netProfit,
                     status: statusValue,
                     // Store additional fields for reference
                     progressive: {

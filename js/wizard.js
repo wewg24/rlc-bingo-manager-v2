@@ -1931,6 +1931,11 @@ function loadMoneyCount() {
         calculatePullTabDrawer();
     }
 
+    // Calculate final totals to update Deposit Summary
+    if (typeof calculateFinalTotals === 'function') {
+        calculateFinalTotals();
+    }
+
     console.log('Money count data loaded');
 }
 
@@ -2709,12 +2714,14 @@ async function submitOccasion() {
     }
 
     try {
+        // Update status in app data first
+        window.app.data.status = 'submitted';
+        window.app.data.submittedAt = new Date().toISOString();
+        window.app.data.submittedBy = window.app.data.occasion?.lionInCharge || 'Unknown';
+
         // Prepare submission data
         const submissionData = {
-            ...window.app.data,
-            status: 'submitted',  // Mark as submitted
-            submittedAt: new Date().toISOString(),
-            submittedBy: window.app.data.occasion.lionInCharge
+            ...window.app.data
         };
 
         // Submit to backend

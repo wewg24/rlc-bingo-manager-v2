@@ -89,7 +89,6 @@ class AdminInterface {
 
         // Navigation buttons
         document.getElementById('nav-dashboard').addEventListener('click', () => this.showDashboard());
-        document.getElementById('nav-occasions').addEventListener('click', () => this.showOccasions());
         document.getElementById('nav-reports').addEventListener('click', () => this.showReports());
         document.getElementById('nav-library').addEventListener('click', () => this.showLibrary());
         document.getElementById('nav-session-games').addEventListener('click', () => this.showSessionGames());
