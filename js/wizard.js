@@ -1909,10 +1909,21 @@ function loadMoneyCount() {
         window.app.calculateMoneyTotals();
     }
 
+    // Calculate Pull-Tab drawer total to update displays
+    if (typeof calculatePullTabDrawer === 'function') {
+        calculatePullTabDrawer();
+    }
+
     console.log('Money count data loaded');
 }
 
 function loadReviewData() {
+    // Calculate Pull-Tab drawer to update Money Summary displays
+    if (typeof calculatePullTabDrawer === 'function') {
+        calculatePullTabDrawer();
+    }
+
+    // Calculate final totals for Financial Summary
     calculateFinalTotals();
 }
 
