@@ -2500,6 +2500,18 @@ function calculateFinalTotals() {
     const totalCheckDeposit = bingoChecks + pullTabChecks;
     const totalActualDeposit = totalCurrencyDeposit + totalCoinDeposit + totalCheckDeposit;
 
+    // Update Money Count tab Deposit Summary
+    const depositCurrency = document.getElementById('deposit-currency');
+    const depositCoins = document.getElementById('deposit-coins');
+    const depositChecks = document.getElementById('deposit-checks');
+    const depositTotal = document.getElementById('deposit-total');
+    const netDeposit = document.getElementById('net-deposit');
+
+    if (depositCurrency) depositCurrency.textContent = `$${totalCurrencyDeposit.toFixed(2)}`;
+    if (depositCoins) depositCoins.textContent = `$${totalCoinDeposit.toFixed(2)}`;
+    if (depositChecks) depositChecks.textContent = `$${totalCheckDeposit.toFixed(2)}`;
+    if (depositTotal) depositTotal.textContent = `$${totalActualDeposit.toFixed(2)}`;
+
     // Bingo financial calculations
     const bingoSales = totalBingoSales;
     const bingoPrizesPaid = totalBingoPrizes;
@@ -2534,6 +2546,9 @@ function calculateFinalTotals() {
     const idealProfit = totalNetProfit; // Alias for Review tab
     const overShort = totalOverShort; // Alias for Review tab
     totalDeposit = totalActualDeposit; // Update existing variable (declared at line 2431)
+
+    // Update Money Count tab Net Deposit
+    if (netDeposit) netDeposit.textContent = `$${totalNetDeposit.toFixed(2)}`;
 
     // Save V2 Enhanced Financial Data (30+ fields)
     if (window.app && window.app.data) {
@@ -2600,14 +2615,15 @@ function calculateFinalTotals() {
     updateSummaryField('summary-bingo-prizes', totalBingoPrizes);
     updateSummaryField('summary-pt-prizes', totalPullTabPrizes);
     updateSummaryField('summary-se-prizes', totalSEPrizes);
-    updateSummaryField('summary-total-prizes', totalPrizes);
+    updateSummaryField('summary-total-prizes', totalPrizesPaid);
     updateSummaryField('summary-deposit', totalDeposit);
     updateSummaryField('summary-actual', actualProfit);
     updateSummaryField('summary-ideal', idealProfit);
     updateSummaryField('summary-overshort', overShort);
 
-    // Update performance metrics
-    updatePerformanceMetrics();
+    // Update performance metrics with calculated values
+    const totalPlayers = appData.occasion?.totalPlayers || 0;
+    updatePerformanceMetrics(totalPlayers, grossSales, actualProfit);
 
     console.log('Final totals calculated:', {
         bingoSales: totalBingoSales,
@@ -2617,7 +2633,7 @@ function calculateFinalTotals() {
         bingoPrizes: totalBingoPrizes,
         pullTabPrizes: totalPullTabPrizes,
         sePrizes: totalSEPrizes,
-        totalPrizes: totalPrizes,
+        totalPrizes: totalPrizesPaid,
         deposit: totalDeposit,
         idealProfit: idealProfit,
         actualProfit: actualProfit,
@@ -2632,39 +2648,43 @@ function updateSummaryField(fieldId, value) {
     }
 }
 
-function updatePerformanceMetrics() {
-    const appData = window.app?.data || {};
+function updatePerformanceMetrics(players, sales, profit) {
+    // If parameters not provided, read from saved data
+    if (players === undefined || sales === undefined || profit === undefined) {
+        const appData = window.app?.data || {};
+        players = appData.occasion?.totalPlayers || 0;
+        sales = appData.financial?.grossSales || 0;
+        profit = appData.financial?.actualProfit || 0;
+    }
 
     // Total Players
-    const totalPlayers = appData.occasion?.totalPlayers || 0;
     const playersEl = document.getElementById('metric-players');
-    if (playersEl) playersEl.textContent = totalPlayers;
+    if (playersEl) playersEl.textContent = players;
 
-    // Gross Sales (from financial data or calculate)
-    let grossSales = appData.financial?.grossSales || 0;
+    // Gross Sales
     const grossEl = document.getElementById('metric-gross');
-    if (grossEl) grossEl.textContent = `$${grossSales.toFixed(2)}`;
+    if (grossEl) grossEl.textContent = `$${sales.toFixed(2)}`;
 
     // Net Profit (Actual Profit)
-    let netProfit = appData.financial?.actualProfit || 0;
     const profitEl = document.getElementById('metric-profit');
-    if (profitEl) profitEl.textContent = `$${netProfit.toFixed(2)}`;
+    if (profitEl) profitEl.textContent = `$${profit.toFixed(2)}`;
 
     // Sales Per Player (Gross Sales / Total Players)
-    const salesPerPlayer = totalPlayers > 0 ? (grossSales / totalPlayers) : 0;
+    const salesPerPlayer = players > 0 ? (sales / players) : 0;
     const salesPerPlayerEl = document.getElementById('metric-sales-per-player');
-    if (salesPerPlayerEl) salesPerPlayerEl.textContent = `$${salesPerPlayer.toFixed(2)}`;
+    if (salesPerPlayerEl) salesPerPlayerEl.textContent = `$${salesPerPlayer.toFixed(2)} / player`;
 
     // Profit Per Player (Net Profit / Total Players)
-    const profitPerPlayer = totalPlayers > 0 ? (netProfit / totalPlayers) : 0;
+    const profitPerPlayer = players > 0 ? (profit / players) : 0;
     const profitPerPlayerEl = document.getElementById('metric-profit-per-player');
-    if (profitPerPlayerEl) profitPerPlayerEl.textContent = `$${profitPerPlayer.toFixed(2)}`;
+    if (profitPerPlayerEl) profitPerPlayerEl.textContent = `$${profitPerPlayer.toFixed(2)} / player`;
 
     console.log('Performance metrics updated:', {
-        totalPlayers,
-        grossSales,
-        netProfit,
-        profitPerPlayer
+        totalPlayers: players,
+        grossSales: sales,
+        netProfit: profit,
+        salesPerPlayer: salesPerPlayer.toFixed(2),
+        profitPerPlayer: profitPerPlayer.toFixed(2)
     });
 }
 

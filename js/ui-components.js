@@ -858,11 +858,16 @@ class UIComponents {
                                     <option value="finalized" ${currentStatus === 'finalized' ? 'selected' : ''}>Finalized</option>
                                 </select>
                                 <small style="color: #666; display: block; margin-top: 0.5rem;">
-                                    💡 Change to "Draft" to allow editing in mobile interface
+                                    💡 Tip: Draft occasions can be edited in the mobile interface. ${currentStatus === 'draft' ? 'Click "Edit in Mobile Interface" button below.' : 'Change to "Draft" to enable editing.'}
                                 </small>
                             </div>
                         </div>
                         <div class="modal-footer">
+                            ${currentStatus === 'draft' ? `
+                                <button type="button" class="btn primary" onclick="window.location.href='occasion.html?date=${occasionDate}&id=${occasionId}';" style="margin-right: auto;">
+                                    📱 Edit in Mobile Interface
+                                </button>
+                            ` : ''}
                             <button type="submit" class="btn success">💾 Save Changes</button>
                             <button type="button" class="btn secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                         </div>

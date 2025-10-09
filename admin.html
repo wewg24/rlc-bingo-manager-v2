@@ -14,6 +14,13 @@
     <script src="./js/config.js"></script>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text" class="loading-text">Loading</div>
+        <div id="loading-subtext" class="loading-subtext">Please wait...</div>
+    </div>
+
     <!-- Login Screen -->
     <div id="login-screen" class="login-container">
         <div class="login-header">
@@ -50,7 +57,6 @@
             <div class="nav-container" style="margin-bottom: 20px;">
                 <div class="nav">
                     <button id="nav-dashboard" class="btn">📊 Dashboard</button>
-                    <button id="nav-occasions" class="btn">📅 Occasions</button>
                     <button id="nav-reports" class="btn">📈 Reports</button>
                     <button id="nav-library" class="btn">🎮 Pull-Tab Library</button>
                     <button id="nav-session-games" class="btn">🎯 Session Games</button>
@@ -61,11 +67,6 @@
             <!-- Dashboard View -->
             <div id="dashboard-view" class="view">
                 <!-- Dashboard content will be dynamically generated -->
-            </div>
-
-            <!-- Occasions View -->
-            <div id="occasions-view" class="view">
-                <!-- Occasions table will be dynamically generated -->
             </div>
 
             <!-- Reports View -->
@@ -126,15 +127,15 @@
     </div>
 
     <!-- JavaScript Modules -->
-    <script src="./js/loading.js?v=2.3.3"></script>
-    <script src="./js/admin-interface.js?v=2.3.3"></script>
-    <script src="./js/api-service.js?v=2.3.3"></script>
-    <script src="./js/ui-components.js?v=2.3.3"></script>
-    <script src="./js/dashboard.js?v=2.3.3"></script>
-    <script src="./js/utilities.js?v=2.3.3"></script>
-    <script src="./js/crud-operations.js?v=2.3.3"></script>
+    <script src="./js/loading.js?v=2.3.5"></script>
+    <script src="./js/admin-interface.js?v=2.3.5"></script>
+    <script src="./js/api-service.js?v=2.3.5"></script>
+    <script src="./js/ui-components.js?v=2.3.5"></script>
+    <script src="./js/dashboard.js?v=2.3.5"></script>
+    <script src="./js/utilities.js?v=2.3.5"></script>
+    <script src="./js/crud-operations.js?v=2.3.5"></script>
 
     <!-- Initialize Application -->
-    <script src="./js/admin-init.js?v=2.3.3"></script>
+    <script src="./js/admin-init.js?v=2.3.5"></script>
 </body>
 </html>

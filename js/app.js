@@ -515,10 +515,10 @@ class BingoApp {
         
         // Process any pending sync items
         await this.processSyncQueue();
-        
-        // Check for updates periodically
-        this.checkVersion();
-        setInterval(() => this.checkVersion(), 5 * 60 * 1000); // Every 5 minutes
+
+        // Check for updates periodically (DISABLED - no version.json file)
+        // this.checkVersion();
+        // setInterval(() => this.checkVersion(), 5 * 60 * 1000); // Every 5 minutes
     }
     
     /**
