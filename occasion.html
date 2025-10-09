@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>RLC Bingo Manager V2 - Mobile Entry</title>
+
+    <!-- Cache control meta tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css?v=2.0.0">
+    <link rel="stylesheet" href="css/wizard.css?v=2.0.0">
+    <link rel="stylesheet" href="css/dark-mode.css?v=2.0.0">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="50x50" href="assets/icons/icon-50.png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-50.png">
+</head>
+<body>
+    <script>
+    // Initialize window.app properties (will be replaced by BingoApp class when scripts load)
+    window.tempAppData = {
+        currentStep: 1,
+        totalSteps: 6,
+        data: {
+            occasion: {},
+            paperBingo: {},
+            posSales: {},
+            electronic: {},
+            games: [],
+            pullTabs: [],
+            moneyCount: { bingo: {}, pullTab: {} },
+            financial: {}
+        },
+        saveDraft: function() {
+            localStorage.setItem('bingo_draft', JSON.stringify(this.data));
+        }
+    };
+
+    // Check for edit parameter and load existing occasion data
+    function checkForEditMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editOccasionId = urlParams.get('edit');
+
+        if (editOccasionId) {
+            console.log('Edit mode detected for occasion:', editOccasionId);
+            window.app.editMode = true;
+            window.app.editOccasionId = editOccasionId;
+            loadExistingOccasion(editOccasionId);
+
+            // Update header to show edit mode
+            const headerText = document.querySelector('.app-header p');
+            if (headerText) {
+                headerText.textContent = `Editing Occasion: ${editOccasionId}`;
+            }
+        }
+    }
+
+    // Load existing occasion data for editing
+    async function loadExistingOccasion(occasionId) {
+        try {
+            const response = await fetch(`${CONFIG.API_URL}?path=occasion&id=${occasionId}`);
+            const result = await response.json();
+
+            console.log('API Response:', result);
+            console.log('API Response JSON:', JSON.stringify(result, null, 2));
+
+            // Check different possible response structures
+            if (result.success && result.data) {
+                // Expected structure: { success: true, data: {...} }
+                const occasionData = result.data;
+                console.log('Loaded occasion data from result.data:', occasionData);
+                populateFormWithData(occasionData);
+                window.app.data = occasionData;
+
+                const submitBtn = document.querySelector('button[onclick="submitOccasion()"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'Update Occasion';
+                }
+            } else if (result.success && result.occasions && result.occasions.length > 0) {
+                // Alternative structure: { success: true, occasions: [...] }
+                const occasionData = result.occasions[0];
+                console.log('Loaded occasion data from result.occasions[0]:', occasionData);
+                populateFormWithData(occasionData);
+                window.app.data = occasionData;
+
+                const submitBtn = document.querySelector('button[onclick="submitOccasion()"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'Update Occasion';
+                }
+            } else if (result.success && result.games) {
+                // API is returning games instead of occasion data - this indicates an API issue
+                console.error('API returned games data instead of occasion data. This suggests the backend needs to be updated.');
+                alert('Backend API issue: The get occasion endpoint is returning game data instead of occasion data. Please check the Google Apps Script backend.');
+            } else {
+                console.error('Failed to load occasion. Full response:', result);
+                console.error('Full response JSON:', JSON.stringify(result, null, 2));
+                console.error('Result.success:', result.success);
+                console.error('Result.data:', result.data);
+                console.error('Error details:', result.error || 'No error details provided');
+                alert(`Failed to load occasion data for editing. ${result.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error loading occasion:', error);
+            alert('Error loading occasion data. Please try again.');
+        }
+    }
+
+    // Populate form fields with existing occasion data
+    function populateFormWithData(data) {
+        // Occasion info
+        if (data.occasion) {
+            const occasion = data.occasion;
+            if (occasion.date) document.getElementById('occasion-date').value = occasion.date;
+            if (occasion.sessionType) document.getElementById('session-type').value = occasion.sessionType;
+            if (occasion.lionInCharge) document.getElementById('lion-charge').value = occasion.lionInCharge;
+            if (occasion.totalPeople) document.getElementById('total-people').value = occasion.totalPeople;
+            if (occasion.birthdays) document.getElementById('birthdays').value = occasion.birthdays;
+
+            // Progressive game data
+            if (occasion.progressive) {
+                const prog = occasion.progressive;
+                if (prog.jackpot) document.getElementById('prog-jackpot').value = prog.jackpot;
+                if (prog.ballsNeeded) document.getElementById('prog-balls').value = prog.ballsNeeded;
+                if (prog.consolation) document.getElementById('prog-consolation').value = prog.consolation;
+                // actualBalls, prizeAwarded, and paidByCheck are now handled in the Game Results tab
+            }
+        }
+
+        // Pull-tab lion
+        if (data.pullTabs && data.pullTabs.lionInCharge) {
+            document.getElementById('pt-lion').value = data.pullTabs.lionInCharge;
+        }
+
+        // POS sales data
+        if (data.posSales) {
+            Object.entries(data.posSales).forEach(([itemId, itemData]) => {
+                const qtyInput = document.getElementById(`${itemId}-qty`);
+                if (qtyInput && itemData.quantity) {
+                    qtyInput.value = itemData.quantity;
+                    // Trigger calculation to update totals
+                    calculatePOSSales(itemId, itemData.price || 0);
+                }
+            });
+        }
+
+        // Money count data will be populated by other scripts when those steps are reached
+        console.log('Form populated with existing data');
+    }
+
+    // Initialize POS Door Sales tables (categorized)
+    function initializePOSSalesForMobile() {
+        if (!CONFIG?.POS_ITEMS) return;
+
+        // Categorize items
+        const electronic = ['small-machine', 'large-machine'];
+        const misc = ['dauber'];
+        const paper = ['6-face', '9-face-solid', '9-face-stripe', 'birthday-pack',
+                       'coverall', 'double-action', 'letter-x', 'number7',
+                       '18-face-prog', '3-face-prog'];
+
+        // Populate Electronic Bingo table
+        const electronicBody = document.getElementById('electronic-sales-body');
+        if (electronicBody) {
+            electronicBody.innerHTML = '';
+            CONFIG.POS_ITEMS.filter(item => electronic.includes(item.id)).forEach(item => {
+                const row = electronicBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td><input type="number" id="${item.id}-qty" min="0" value="0" onchange="calculatePOSSales('${item.id}', ${item.price})"></td>
+                    <td id="${item.id}-total">$0.00</td>
+                `;
+            });
+        }
+
+        // Populate Miscellaneous table
+        const miscBody = document.getElementById('misc-sales-body');
+        if (miscBody) {
+            miscBody.innerHTML = '';
+            CONFIG.POS_ITEMS.filter(item => misc.includes(item.id)).forEach(item => {
+                const row = miscBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td><input type="number" id="${item.id}-qty" min="0" value="0" onchange="calculatePOSSales('${item.id}', ${item.price})"></td>
+                    <td id="${item.id}-total">$0.00</td>
+                `;
+            });
+        }
+
+        // Populate Paper table
+        const paperBody = document.getElementById('paper-sales-body-new');
+        if (paperBody) {
+            paperBody.innerHTML = '';
+            CONFIG.POS_ITEMS.filter(item => paper.includes(item.id)).forEach(item => {
+                const row = paperBody.insertRow();
+
+                // Pre-populate birthday-pack from Occasion Info
+                let defaultQty = 0;
+                if (item.id === 'birthday-pack' && window.app?.data?.occasion?.birthdayBogos) {
+                    defaultQty = parseInt(window.app.data.occasion.birthdayBogos) || 0;
+                }
+
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td><input type="number" id="${item.id}-qty" min="0" value="${defaultQty}" onchange="calculatePOSSales('${item.id}', ${item.price})"></td>
+                    <td id="${item.id}-total">$0.00</td>
+                `;
+
+                // Trigger calculation for birthday-pack if pre-populated
+                if (defaultQty > 0 && item.id === 'birthday-pack') {
+                    setTimeout(() => calculatePOSSales('birthday-pack', item.price), 100);
+                }
+            });
+        }
+
+        console.log('POS Door Sales tables initialized with', CONFIG.POS_ITEMS.length, 'items');
+    }
+
+    // Calculate POS sales totals
+    function calculatePOSSales(itemId, price) {
+        const qtyInput = document.getElementById(`${itemId}-qty`);
+        const totalCell = document.getElementById(`${itemId}-total`);
+
+        if (!qtyInput || !totalCell) return;
+
+        const quantity = parseInt(qtyInput.value) || 0;
+        const total = quantity * price;
+
+        totalCell.textContent = `$${total.toFixed(2)}`;
+
+        // Store in app data
+        if (!window.app.data.posSales) window.app.data.posSales = {};
+        window.app.data.posSales[itemId] = {
+            price: price,
+            quantity: quantity,
+            total: total
+        };
+
+        // Categorize items
+        const electronic = ['small-machine', 'large-machine'];
+        const misc = ['dauber'];
+        const paper = ['6-face', '9-face-solid', '9-face-stripe', 'birthday-pack',
+                       'coverall', 'double-action', 'letter-x', 'number7',
+                       '18-face-prog', '3-face-prog'];
+
+        // Calculate subtotals
+        let electronicTotal = 0;
+        let miscTotal = 0;
+        let paperTotal = 0;
+
+        Object.keys(window.app.data.posSales).forEach(id => {
+            const itemTotal = window.app.data.posSales[id].total || 0;
+            if (electronic.includes(id)) electronicTotal += itemTotal;
+            else if (misc.includes(id)) miscTotal += itemTotal;
+            else if (paper.includes(id)) paperTotal += itemTotal;
+        });
+
+        // Update subtotals
+        const electronicSubtotalCell = document.getElementById('electronic-subtotal');
+        const miscSubtotalCell = document.getElementById('misc-subtotal');
+        const paperSubtotalCell = document.getElementById('paper-subtotal');
+
+        if (electronicSubtotalCell) electronicSubtotalCell.innerHTML = `<strong>$${electronicTotal.toFixed(2)}</strong>`;
+        if (miscSubtotalCell) miscSubtotalCell.innerHTML = `<strong>$${miscTotal.toFixed(2)}</strong>`;
+        if (paperSubtotalCell) paperSubtotalCell.innerHTML = `<strong>$${paperTotal.toFixed(2)}</strong>`;
+
+        // Calculate grand total
+        const grandTotal = electronicTotal + miscTotal + paperTotal;
+        const grandTotalCell = document.getElementById('total-bingo-sales');
+        if (grandTotalCell) {
+            grandTotalCell.innerHTML = `<strong>$${grandTotal.toFixed(2)}</strong>`;
+        }
+
+        console.log('POS Sales updated:', itemId, { quantity, total, electronicTotal, miscTotal, paperTotal, grandTotal });
+    }
+
+    // Fix hamburger menu
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check for edit mode first
+        checkForEditMode();
+
+        // Initialize POS Door Sales table
+        initializePOSSalesForMobile();
+
+        const menuToggle = document.getElementById('menu-toggle');
+        const sideMenu = document.getElementById('side-menu');
+        const overlay = document.getElementById('overlay');
+
+        if (menuToggle) {
+            menuToggle.onclick = function() {
+                if (sideMenu) sideMenu.classList.add('active');
+                if (overlay) overlay.classList.add('active');
+            };
+        }
+
+        if (overlay) {
+            overlay.onclick = function() {
+                if (sideMenu) sideMenu.classList.remove('active');
+                this.classList.remove('active');
+            };
+        }
+
+        // Progressive auto-calculation
+        // Progressive game prize calculation is now handled in the Game Results tab (wizard.js: updateProgressivePrize function)
+
+        // Auto-scroll focused inputs into view
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('focus', function() {
+                // Small delay to let the browser finish focusing
+                setTimeout(() => {
+                    this.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }, 100);
+            });
+        });
+    });
+
+    // Function to handle session type changes and reload games
+    function onSessionTypeChange() {
+        const sessionType = document.getElementById('session-type')?.value;
+        if (sessionType && window.app && window.app.currentStep === 3) {
+            // If we're already on the Game Results step, reload the games immediately
+            loadGameResults();
+        }
+        // Store the selected session type for later use
+        if (window.app && window.app.data) {
+            window.app.data.sessionType = sessionType;
+        }
+    }
+
+    // Update Birthday BOGOs
+    function updateBirthdayBOGOs() {
+        const birthdays = parseInt(document.getElementById('birthdays')?.value) || 0;
+
+        // Update Physical Counts - Free column
+        // 1 Birthday = 2 Early Birds + 1 Six Pack
+        const ebFreeInput = document.getElementById('paper-eb-free');
+        const sixPackFreeInput = document.getElementById('paper-6f-free');
+
+        if (ebFreeInput) {
+            ebFreeInput.value = birthdays * 2;
+            ebFreeInput.readOnly = true;
+            ebFreeInput.style.backgroundColor = '#f0f0f0';
+            calculatePaperSold('eb'); // Recalculate sold
+        }
+
+        if (sixPackFreeInput) {
+            sixPackFreeInput.value = birthdays;
+            sixPackFreeInput.readOnly = true;
+            sixPackFreeInput.style.backgroundColor = '#f0f0f0';
+            calculatePaperSold('6f'); // Recalculate sold
+        }
+
+        // Update Door Sales - Birthday row quantity (read-only)
+        const birthdayQtyInput = document.getElementById('birthday-pack-qty');
+        if (birthdayQtyInput) {
+            birthdayQtyInput.value = birthdays;
+            birthdayQtyInput.readOnly = true;
+            birthdayQtyInput.style.backgroundColor = '#f0f0f0';
+            // Trigger calculation to update total
+            if (typeof window.calculatePOSSales === 'function') {
+                window.calculatePOSSales('birthday-pack', 0);
+            }
+        }
+
+        // Save to app data
+        if (window.app && window.app.data) {
+            if (!window.app.data.occasion) window.app.data.occasion = {};
+            window.app.data.occasion.birthdays = birthdays;
+        }
+    }
+
+    // Make globally accessible
+    window.updateBirthdayBOGOs = updateBirthdayBOGOs;
+
+    // Handle SE checkbox like a radio button (only one can be checked)
+    function handleSECheckbox(checkbox) {
+        if (checkbox.checked) {
+            // Uncheck all other SE checkboxes
+            document.querySelectorAll('.se-checkbox').forEach(cb => {
+                if (cb !== checkbox) {
+                    cb.checked = false;
+                }
+            });
+        }
+        // Trigger calculation
+        if (typeof calculatePullTabTotals === 'function') {
+            calculatePullTabTotals();
+        }
+    }
+
+    // Make globally accessible
+    window.handleSECheckbox = handleSECheckbox;
+
+    // Formatting functions
+    function formatCurrency(value) {
+        const num = parseFloat(value) || 0;
+        return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatNumber(value) {
+        const num = parseInt(value) || 0;
+        return num.toLocaleString('en-US');
+    }
+
+    // Make globally accessible
+    window.formatCurrency = formatCurrency;
+    window.formatNumber = formatNumber;
+    </script>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>RLC Bingo Manager</h1>
+                <p style="margin: 0; font-size: 14px; opacity: 0.8;">Mobile Occasion Entry</p>
+                <div class="header-controls">
+                    <button id="theme-toggle" class="icon-button" aria-label="Toggle theme">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button id="menu-toggle" class="icon-button" aria-label="Menu">
+                        <span>☰</span>
+                    </button>
+                    <div class="connection-status">
+                        <span id="status-indicator" class="status-online">●</span>
+                        <span id="status-text">Online</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="wizard-container">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="1" onclick="switchToTab(1)">Occasion</button>
+                <button class="tab-button" data-tab="4" onclick="switchToTab(4)">Pull-Tabs</button>
+                <button class="tab-button" data-tab="2" onclick="switchToTab(2)">Bingo</button>
+                <button class="tab-button" data-tab="3" onclick="switchToTab(3)">Game Results</button>
+                <button class="tab-button" data-tab="5" onclick="switchToTab(5)">Money Count</button>
+                <button class="tab-button" data-tab="6" onclick="switchToTab(6)">Review</button>
+            </div>
+
+            <!-- Tab Content -->
+            <!-- Step 1: Occasion -->
+            <div class="wizard-step active" id="step-1">
+                <h2>Occasion</h2>
+                <div class="form-section">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="occasion-date">Date</label>
+                            <input type="date" id="occasion-date" required onchange="checkExistingOccasion()">
+                        </div>
+                        <div class="form-group">
+                            <label for="session-type">Session</label>
+                            <select id="session-type" required onchange="onSessionTypeChange()">
+                                <option value="">Select...</option>
+                                <option value="5-1">5-1 (1st/5th Monday)</option>
+                                <option value="6-2">6-2 (2nd Monday)</option>
+                                <option value="7-3">7-3 (3rd Monday)</option>
+                                <option value="8-4">8-4 (4th Monday)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lion-charge">Closet Worker</label>
+                            <input type="text" id="lion-charge" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="total-people">Total People</label>
+                            <input type="number" id="total-people" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="progressive-section">
+                        <h3>Progressive Game</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="prog-jackpot">Jackpot Offered</label>
+                                <input type="number" id="prog-jackpot" step="1" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="prog-balls">Balls to Win</label>
+                                <input type="number" id="prog-balls" min="1" max="75">
+                            </div>
+                            <div class="form-group">
+                                <label for="prog-consolation">Consolation Prize</label>
+                                <input type="number" id="prog-consolation" value="200">
+                            </div>
+                        </div>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.5rem;">
+                            <em>Note: Actual Balls Called and Prize Awarded are now entered directly in the Progressive Diamond row on the Game Results tab.</em>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="tab-footer" style="margin-top: 2rem; text-align: right;">
+                    <button class="button secondary" onclick="saveDraft()">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Bingo Sales -->
+            <div class="wizard-step" id="step-2">
+                <h2>Bingo Sales</h2>
+
+                <!-- Physical Counts Section (Optional) -->
+                <div class="form-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Physical Counts <span style="font-size: 0.8em; font-weight: normal; color: #666;">(Optional - for over/short analysis)</span></h3>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <label for="birthdays" style="margin: 0; font-weight: 600;">Birthdays (BOGOs):</label>
+                            <input type="number" id="birthdays" min="0" value="0" onchange="updateBirthdayBOGOs()" style="width: 80px; padding: 0.5rem;">
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Start</th>
+                                <th>Free (BOGOs)</th>
+                                <th>End</th>
+                                <th>Sold</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paper-sales-body">
+                            <!-- Rows will be generated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Door Sales Summary Section -->
+                <div class="form-section">
+                    <h3>Door Sales Summary</h3>
+
+                    <!-- Electronic Bingo -->
+                    <h4 style="margin-top: 20px; color: #2c3e50;">Electronic Bingo</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="electronic-sales-body">
+                            <!-- Electronic items will be here -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="subtotal-row">
+                                <td colspan="3"><strong>Electronic Subtotal</strong></td>
+                                <td id="electronic-subtotal"><strong>$0.00</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Miscellaneous -->
+                    <h4 style="margin-top: 20px; color: #2c3e50;">Miscellaneous</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="misc-sales-body">
+                            <!-- Misc items will be here -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="subtotal-row">
+                                <td colspan="3"><strong>Miscellaneous Subtotal</strong></td>
+                                <td id="misc-subtotal"><strong>$0.00</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Paper -->
+                    <h4 style="margin-top: 20px; color: #2c3e50;">Paper</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paper-sales-body-new">
+                            <!-- Paper items will be here -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="subtotal-row">
+                                <td colspan="3"><strong>Paper Subtotal</strong></td>
+                                <td id="paper-subtotal"><strong>$0.00</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Grand Total -->
+                    <table class="data-table" style="margin-top: 20px;">
+                        <tfoot>
+                            <tr class="total-row" style="background-color: #3498db; color: white;">
+                                <td colspan="3"><strong>TOTAL BINGO SALES</strong></td>
+                                <td id="total-bingo-sales"><strong>$0.00</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="tab-footer" style="margin-top: 2rem; text-align: right;">
+                    <button class="button secondary" onclick="saveDraft()">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Game Results -->
+            <div class="wizard-step" id="step-3">
+                <h2>Session Games</h2>
+                <div class="form-section">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Color</th>
+                                <th>Game</th>
+                                <th>Prize</th>
+                                <th>Actual Balls</th>
+                                <th>Winners</th>
+                                <th>Per Winner</th>
+                                <th>Total</th>
+                                <th>Paid by Check</th>
+                                <th>Not Played</th>
+                            </tr>
+                        </thead>
+                        <tbody id="games-body">
+                            <!-- Games will be loaded based on session type -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="7"><strong>Total Bingo Prizes</strong></td>
+                                <td id="total-bingo-prizes"><strong>$0.00</strong></td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="tab-footer" style="margin-top: 2rem; text-align: right;">
+                    <button class="button secondary" onclick="saveDraft()">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Pull-Tab Summary -->
+            <div class="wizard-step" id="step-4">
+                <h2>Pull-Tab Summary</h2>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="pt-lion">Lion in Charge of Pull-Tabs</label>
+                        <input type="text" id="pt-lion">
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 28%;">Game</th>
+                                <th style="width: 15%;">Serial #</th>
+                                <th>$/Ticket</th>
+                                <th>Tickets</th>
+                                <th>Sales</th>
+                                <th>Ideal</th>
+                                <th>Prizes</th>
+                                <th>Net</th>
+                                <th style="width: 5%; writing-mode: vertical-rl; text-orientation: mixed; padding: 0.5rem 0.25rem;">By Check</th>
+                                <th style="width: 5%; writing-mode: vertical-rl; text-orientation: mixed; padding: 0.5rem 0.25rem;">Special</th>
+                                <th style="width: 5%; writing-mode: vertical-rl; text-orientation: mixed; padding: 0.5rem 0.25rem;">Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pulltab-body">
+                            <!-- Pull-tab games will be added here -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="4">Regular Pull-Tab Games</td>
+                                <td id="pt-reg-sales">$0.00</td>
+                                <td id="pt-reg-ideal">$0.00</td>
+                                <td id="pt-reg-prizes">$0.00</td>
+                                <td id="pt-reg-net">$0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr class="total-row special-event">
+                                <td colspan="4">Special Event Game</td>
+                                <td id="pt-se-sales">$0.00</td>
+                                <td id="pt-se-ideal">$0.00</td>
+                                <td id="pt-se-prizes">$0.00</td>
+                                <td id="pt-se-net">$0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr class="total-row" style="background-color: #bbdefb; font-weight: 700;">
+                                <td colspan="4">All Pull-Tab Games</td>
+                                <td id="pt-all-sales">$0.00</td>
+                                <td id="pt-all-ideal">$0.00</td>
+                                <td id="pt-all-prizes">$0.00</td>
+                                <td id="pt-all-net">$0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <button class="button secondary" onclick="addPullTabRow()">Add Game</button>
+                    <button onclick="addSpecialEventRow()" class="button secondary">Add Custom</button>
+
+                    <!-- Drawer Tracking and Offage Analysis Container -->
+                    <div style="display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap;">
+                        <!-- Drawer Tracking Section -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h3 style="color: #2c3e50; margin-bottom: 1rem;">Drawer Tracking</h3>
+                            <div class="drawer-section" style="background: var(--light); padding: 1.5rem; border-radius: 8px;">
+                                <table class="money-table" style="width: 100%;">
+                                    <tr>
+                                        <td style="width: 30%;">$100's</td>
+                                        <td style="width: 70%;"><input type="number" id="pt-drawer-100" step="100" min="0" onchange="calculatePullTabDrawer()" tabindex="401"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$50's</td>
+                                        <td><input type="number" id="pt-drawer-50" step="50" min="0" onchange="calculatePullTabDrawer()" tabindex="402"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$20's</td>
+                                        <td><input type="number" id="pt-drawer-20" step="20" min="0" onchange="calculatePullTabDrawer()" tabindex="403"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$10's</td>
+                                        <td><input type="number" id="pt-drawer-10" step="10" min="0" onchange="calculatePullTabDrawer()" tabindex="404"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$5's</td>
+                                        <td><input type="number" id="pt-drawer-5" step="5" min="0" onchange="calculatePullTabDrawer()" tabindex="405"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$2's</td>
+                                        <td><input type="number" id="pt-drawer-2" step="2" min="0" onchange="calculatePullTabDrawer()" tabindex="406"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>$1's</td>
+                                        <td><input type="number" id="pt-drawer-1" step="1" min="0" onchange="calculatePullTabDrawer()" tabindex="407"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Coins</td>
+                                        <td><input type="number" id="pt-drawer-coins" step="0.01" min="0" onchange="calculatePullTabDrawer()" tabindex="408"></td>
+                                    </tr>
+                                    <tr class="total-row" style="background-color: #e3f2fd; font-weight: 600;">
+                                        <td style="text-align: right; padding-right: 1rem;"><strong>Drawer Total:</strong></td>
+                                        <td><strong><span id="pt-drawer-total">$0.00</span></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Offage Analysis Section -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h3 style="color: #2c3e50; margin-bottom: 1rem;">Offage Analysis</h3>
+                            <div class="drawer-section" style="background: var(--light); padding: 1.5rem; border-radius: 8px;">
+                                <table class="money-table" style="width: 100%;">
+                                    <tr>
+                                        <td style="width: 60%; font-weight: 600;">Pull-Tab Drawer Total Deposit:</td>
+                                        <td style="width: 40%; text-align: right;" id="offage-drawer-total">$0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight: 600;">All Pull-Tab Games Net:</td>
+                                        <td style="text-align: right;" id="offage-games-net">$0.00</td>
+                                    </tr>
+                                    <tr class="total-row" style="background-color: #e3f2fd; font-weight: 700;">
+                                        <td><strong>Over/(Short):</strong></td>
+                                        <td style="text-align: right;"><strong><span id="offage-overshort">$0.00</span></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="tab-footer" style="margin-top: 2rem; text-align: right;">
+                    <button class="button secondary" onclick="saveDraft()">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Money Count -->
+            <div class="wizard-step" id="step-5">
+                <h2>Money Summary</h2>
+                <div class="form-section">
+                    <div class="money-grid">
+                        <div class="drawer-section">
+                            <h3>Bingo Drawer</h3>
+                            <table class="money-table">
+                                <tr>
+                                    <td>$100's</td>
+                                    <td><input type="number" id="bingo-100" step="100" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$50's</td>
+                                    <td><input type="number" id="bingo-50" step="50" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$20's</td>
+                                    <td><input type="number" id="bingo-20" step="20" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$10's</td>
+                                    <td><input type="number" id="bingo-10" step="10" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$5's</td>
+                                    <td><input type="number" id="bingo-5" step="5" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$2's</td>
+                                    <td><input type="number" id="bingo-2" step="2" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>$1's</td>
+                                    <td><input type="number" id="bingo-1" step="1" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>Coins</td>
+                                    <td><input type="number" id="bingo-coins" step="0.01" min="0"></td>
+                                </tr>
+                                <tr>
+                                    <td>Checks</td>
+                                    <td><input type="number" id="bingo-checks" step="0.01" min="0"></td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Total</td>
+                                    <td id="bingo-total">$0.00</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="drawer-section">
+                            <h3>Pull-Tab Drawer <span style="font-size: 0.8em; color: #666; font-weight: normal;">(Read-Only - Edit on Pull-Tabs tab)</span></h3>
+                            <table class="money-table">
+                                <tr>
+                                    <td>$100's</td>
+                                    <td id="pt-100-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$50's</td>
+                                    <td id="pt-50-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$20's</td>
+                                    <td id="pt-20-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$10's</td>
+                                    <td id="pt-10-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$5's</td>
+                                    <td id="pt-5-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$2's</td>
+                                    <td id="pt-2-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>$1's</td>
+                                    <td id="pt-1-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Coins</td>
+                                    <td id="pt-coins-display">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Checks</td>
+                                    <td>N/A</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Total</td>
+                                    <td id="pt-total">$0.00</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="drawer-section">
+                            <h3>Deposit Summary</h3>
+                            <table class="money-table">
+                                <tr>
+                                    <td>Currency</td>
+                                    <td id="deposit-currency">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Coins</td>
+                                    <td id="deposit-coins">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Checks</td>
+                                    <td id="deposit-checks">$0.00</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>Total Deposit</td>
+                                    <td id="deposit-total">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Less Startup</td>
+                                    <td>-$1,000.00</td>
+                                </tr>
+                                <tr class="grand-total">
+                                    <td>Net Deposit</td>
+                                    <td id="net-deposit">$0.00</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Draft Button -->
+                <div class="tab-footer" style="margin-top: 2rem; text-align: right;">
+                    <button class="button secondary" onclick="saveDraft()">💾 Save Draft</button>
+                </div>
+            </div>
+
+            <!-- Step 6: Review and Submit -->
+            <div class="wizard-step" id="step-6">
+                <h2>Review & Submit</h2>
+                <div class="form-section">
+                    <div class="summary-card">
+                        <h3>Financial Summary</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <label>Total Bingo Sales:</label>
+                                <span id="summary-bingo-sales">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Pull-Tab Sales:</label>
+                                <span id="summary-pt-sales">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Special Event Sales:</label>
+                                <span id="summary-se-sales">$0.00</span>
+                            </div>
+                            <div class="summary-item grand-total">
+                                <label>Gross Sales:</label>
+                                <span id="summary-gross">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Bingo Prizes:</label>
+                                <span id="summary-bingo-prizes">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Pull-Tab Prizes:</label>
+                                <span id="summary-pt-prizes">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Special Event Prizes:</label>
+                                <span id="summary-se-prizes">$0.00</span>
+                            </div>
+                            <div class="summary-item grand-total">
+                                <label>Total Prizes:</label>
+                                <span id="summary-total-prizes">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Cash Deposit:</label>
+                                <span id="summary-deposit">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Less Startup:</label>
+                                <span>-$1,000.00</span>
+                            </div>
+                            <div class="summary-item grand-total">
+                                <label>Actual Profit:</label>
+                                <span id="summary-actual">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <label>Ideal Profit:</label>
+                                <span id="summary-ideal">$0.00</span>
+                            </div>
+                            <div class="summary-item" id="overshort-item">
+                                <label>Over/Short:</label>
+                                <span id="summary-overshort">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-card">
+                        <h3>Performance Metrics</h3>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <span class="metric-value" id="metric-players">0</span>
+                                <span class="metric-label">Total Players</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value" id="metric-gross">$0.00</span>
+                                <span class="metric-label">Gross Sales</span>
+                                <span class="metric-value" id="metric-sales-per-player" style="font-size: 0.8em; color: #666; margin-top: 0.25rem;">$0.00 / player</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value" id="metric-profit">$0.00</span>
+                                <span class="metric-label">Net Profit</span>
+                                <span class="metric-value" id="metric-profit-per-player" style="font-size: 0.8em; color: #666; margin-top: 0.25rem;">$0.00 / player</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="button success large" onclick="submitOccasion()">
+                            Submit Occasion
+                        </button>
+                        <button class="button secondary" onclick="saveDraft()">
+                            Save Draft
+                        </button>
+                        <button class="button" onclick="generatePDFReport()">
+                            📄 Generate PDF Report
+                        </button>
+                        <button class="button" onclick="generateSMSSummary()">
+                            💬 SMS Summary
+                        </button>
+                        <button class="button" onclick="exportData()">
+                            Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation buttons removed - using tabs instead -->
+
+        <!-- Side Menu -->
+        <div class="side-menu" id="side-menu">
+            <div class="menu-header">
+                <h3>Menu</h3>
+                <button class="close-menu" onclick="closeMenu()">×</button>
+            </div>
+            <nav class="menu-nav">
+                <a href="https://wewg24.github.io/rlc-bingo-manager/admin.html">Admin Dashboard</a>
+                <a href="#" onclick="showHelp()">Help & Support</a>
+            </nav>
+        </div>
+
+        <!-- Overlay -->
+        <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+    </div>
+
+    <!-- Existing Occasion Modal -->
+    <div id="existing-occasion-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Existing Occasion Found</h3>
+            <p id="modal-message">An occasion already exists for this date.</p>
+            <div class="modal-buttons">
+                <button class="button primary" onclick="loadExistingOccasion()">Load Existing</button>
+                <button class="button secondary" onclick="closeExistingOccasionModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner Overlay -->
+    <style>
+        @keyframes rlcSpinnerRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        #loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            min-width: 280px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            border: 5px solid #e0e0e0;
+            border-top: 5px solid #1565C0;
+            border-radius: 50%;
+            animation: rlcSpinnerRotate 0.8s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .loading-subtext {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        /* Door Sales column alignment */
+        #electronic-sales-body th:nth-child(1),
+        #misc-sales-body th:nth-child(1),
+        #paper-sales-body-new th:nth-child(1),
+        #electronic-sales-body td:nth-child(1),
+        #misc-sales-body td:nth-child(1),
+        #paper-sales-body-new td:nth-child(1) {
+            width: 40%;
+        }
+        #electronic-sales-body th:nth-child(2),
+        #misc-sales-body th:nth-child(2),
+        #paper-sales-body-new th:nth-child(2),
+        #electronic-sales-body td:nth-child(2),
+        #misc-sales-body td:nth-child(2),
+        #paper-sales-body-new td:nth-child(2) {
+            width: 20%;
+        }
+        #electronic-sales-body th:nth-child(3),
+        #misc-sales-body th:nth-child(3),
+        #paper-sales-body-new th:nth-child(3),
+        #electronic-sales-body td:nth-child(3),
+        #misc-sales-body td:nth-child(3),
+        #paper-sales-body-new td:nth-child(3) {
+            width: 20%;
+        }
+        #electronic-sales-body th:nth-child(4),
+        #misc-sales-body th:nth-child(4),
+        #paper-sales-body-new th:nth-child(4),
+        #electronic-sales-body td:nth-child(4),
+        #misc-sales-body td:nth-child(4),
+        #paper-sales-body-new td:nth-child(4) {
+            width: 20%;
+        }
+    </style>
+    <div id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text" id="loading-text">Loading</div>
+            <div class="loading-subtext" id="loading-subtext">Please wait...</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js?v=2.0.0"></script>
+    <script src="js/loading.js?v=2.0.0"></script>
+    <script src="js/formatConverter.js?v=2.0.0"></script>
+    <script src="js/app.js?v=2.0.0"></script>
+    <script src="js/wizard.js?v=2.0.0"></script>
+    <script src="js/calculations.js?v=2.0.0"></script>
+    <script src="js/reports.js?v=2.0.0"></script>
+    <script src="js/offline.js?v=2.0.0"></script>
+    <script src="js/sync.js?v=2.0.0"></script>
+    <script src="js/init.js?v=2.0.0"></script>
+</body>
+</html>

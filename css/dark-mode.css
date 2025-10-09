@@ -1,0 +1,390 @@
+/* css/dark-mode.css - Complete Dark Mode Implementation */
+
+/* Dark Mode Root Variables with Lions Club Theme */
+body.dark-mode {
+    --background: #1a1a1a;
+    --text: #e8e8e8;
+    --text-secondary: #b0b0b0;
+    --white: #2c2c2c;
+    --light: #3a3a3a;
+    --border: #4a4a4a;
+
+    /* Lions Club Dark Mode Colors */
+    --primary: #4787db; /* Lighter Lions Blue for dark mode */
+    --primary-dark: #1565C0;
+    --lions-yellow: #f9c910;
+    --lions-yellow-dark: #e6b800;
+    --lions-yellow-muted: #8b7300; /* Darker yellow for dark mode text */
+
+    /* Shadows with Lions Club colors */
+    --shadow: 0 2px 8px rgba(71, 135, 219, 0.15);
+    --shadow-lg: 0 8px 24px rgba(71, 135, 219, 0.2);
+    --shadow-yellow: 0 4px 15px rgba(249, 201, 16, 0.25);
+
+    /* Form specific colors for dark mode */
+    --input-bg: #2a2a2a;
+    --input-text: #ffffff;
+    --input-border: #505050;
+    --label-text: #d0d0d0;
+    --placeholder-text: #808080;
+}
+
+/* Base dark mode styles */
+body.dark-mode {
+    background: var(--background);
+    color: var(--text);
+}
+
+/* Header adjustments for dark mode with Lions Club theme */
+body.dark-mode .app-header {
+    background: linear-gradient(135deg, #0c0c0c, #1a1a1a);
+    border-bottom: 1px solid #4a4a4a;
+    border-top: 3px solid var(--lions-yellow);
+}
+
+body.dark-mode .app-header h1 {
+    color: #ffffff !important;  /* Force white for the title */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Add subtle shadow for depth */
+}
+
+body.dark-mode .header-content {
+    color: #ffffff;
+}
+
+body.dark-mode .header-controls {
+    color: #ffffff;
+}
+
+body.dark-mode .icon-button {
+    color: #ffffff !important;  /* This fixes the hamburger menu visibility */
+    background: transparent;
+    border: none;
+    opacity: 0.9;
+}
+
+body.dark-mode .icon-button:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+body.dark-mode .theme-icon {
+    filter: brightness(1.5); /* Brighten the emoji icons */
+}
+
+/* Form sections with improved contrast */
+body.dark-mode .form-section,
+body.dark-mode .summary-card,
+body.dark-mode .metrics-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+}
+
+/* Labels - Much brighter for readability */
+body.dark-mode label,
+body.dark-mode .form-group label {
+    color: var(--label-text);
+    font-weight: 500;  /* Slightly lighter weight for better readability */
+}
+
+/* Input fields with better contrast */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="date"],
+body.dark-mode select,
+body.dark-mode textarea {
+    background: var(--input-bg);
+    color: var(--input-text);
+    border: 1px solid var(--input-border);
+}
+
+/* Placeholder text that's actually visible */
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: var(--placeholder-text);
+    opacity: 1;  /* Firefox fix */
+}
+
+/* Focus states with better visibility */
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus {
+    border-color: #4a9eff;
+    outline: 1px solid rgba(74, 158, 255, 0.3);
+}
+
+/* Progressive section with proper contrast */
+body.dark-mode .progressive-section {
+    background: #1e2835;  /* Slightly blue-tinted dark background */
+    border: 2px solid #3a5f8a;
+}
+
+body.dark-mode .progressive-section h3 {
+    color: #7ab8ff;  /* Bright blue for headers */
+}
+
+body.dark-mode .progressive-section label {
+    color: #c0d4e8;  /* Light blue-gray for labels */
+}
+
+/* Tables with readable content */
+body.dark-mode .data-table th {
+    background: var(--light);
+    color: #e0e0e0;
+    border-color: var(--border);
+}
+
+body.dark-mode .data-table td {
+    background: var(--white);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+body.dark-mode .data-table input {
+    color: var(--input-text);
+    background: transparent;
+}
+
+/* Readonly inputs should be visibly different */
+body.dark-mode input[readonly],
+body.dark-mode input:disabled {
+    background: #1f1f1f;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+/* Total rows in tables */
+body.dark-mode .total-row {
+    background: #1e3a5f;
+    color: #ffffff;
+}
+
+body.dark-mode .grand-total {
+    background: #264a7a;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+body.dark-mode .special-event {
+    background: #3d3a00 !important;
+    color: #ffeb3b;
+}
+
+/* Wizard progress elements */
+body.dark-mode .wizard-progress {
+    background: var(--white);
+    border: 1px solid var(--border);
+}
+
+body.dark-mode .progress-bar {
+    background: var(--light);
+}
+
+body.dark-mode .step-number {
+    background: var(--light);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+body.dark-mode .step-number {
+    background: #3a3a3a;
+    color: #ffffff;
+    border: 2px solid #505050;
+}
+
+body.dark-mode .step.completed .step-number {
+    background: var(--success);
+    color: #ffffff;
+    border-color: var(--success);
+}
+
+body.dark-mode .step-label {
+    color: #b0b0b0;
+}
+
+body.dark-mode .step.active .step-label {
+    color: #ffffff;
+}
+
+/* Navigation area */
+body.dark-mode .wizard-navigation {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+}
+
+/* Buttons in dark mode */
+body.dark-mode .button.secondary {
+    background: #5a5a5a;
+    color: #ffffff;
+}
+
+body.dark-mode .button.secondary:hover {
+    background: #6a6a6a;
+}
+
+body.dark-mode .button:disabled {
+    background: #3a3a3a;
+    color: #666666;
+}
+
+/* Side menu */
+body.dark-mode .side-menu {
+    background: var(--white);
+    border-left: 1px solid var(--border);
+}
+
+body.dark-mode .menu-header {
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+}
+
+body.dark-mode .close-menu {
+    color: var(--text);
+}
+
+body.dark-mode .menu-nav a {
+    color: var(--text);
+}
+
+body.dark-mode .menu-nav a:hover {
+    background: var(--light);
+}
+
+/* Summary items */
+body.dark-mode .summary-item {
+    background: var(--light);
+    color: var(--text);
+}
+
+body.dark-mode .summary-item label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+body.dark-mode .summary-item span {
+    color: #ffffff;
+}
+
+body.dark-mode .summary-item.grand-total {
+    background: #264a7a;
+}
+
+body.dark-mode .summary-item.grand-total label,
+body.dark-mode .summary-item.grand-total span {
+    color: #ffffff;
+}
+
+/* Money count sections */
+body.dark-mode .drawer-section {
+    background: var(--light);
+    border: 1px solid var(--border);
+}
+
+body.dark-mode .drawer-section h3 {
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+body.dark-mode .money-table td {
+    color: var(--text);
+    border-bottom-color: var(--border);
+}
+
+body.dark-mode .money-table input {
+    background: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+}
+
+/* Metrics display */
+body.dark-mode .metric-value {
+    color: #7ab8ff;  /* Bright blue for visibility */
+}
+
+body.dark-mode .metric-label {
+    color: var(--text-secondary);
+}
+
+/* Status indicators */
+body.dark-mode .status-good {
+    color: #4ade80;  /* Brighter green */
+}
+
+body.dark-mode .status-bad {
+    color: #f87171;  /* Brighter red */
+}
+
+/* Connection status */
+body.dark-mode .connection-status {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+body.dark-mode #status-text {
+    color: #ffffff !important;
+}
+
+body.dark-mode .status-online {
+    color: #4ade80;
+}
+
+body.dark-mode .status-offline {
+    color: #f87171;
+}
+
+/* Dropdown selects - ensure text is visible */
+body.dark-mode select option {
+    background: var(--input-bg);
+    color: var(--input-text);
+}
+
+/* Checkboxes and radio buttons */
+body.dark-mode input[type="checkbox"],
+body.dark-mode input[type="radio"] {
+    accent-color: var(--primary);
+}
+
+/* Links in dark mode */
+body.dark-mode a {
+    color: #7ab8ff;
+}
+
+body.dark-mode a:hover {
+    color: #9ecfff;
+}
+
+/* Error/warning states */
+body.dark-mode .error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+body.dark-mode .warning {
+    color: #ffd43b;
+    background: rgba(255, 212, 59, 0.1);
+}
+
+body.dark-mode .success {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+}
+
+/* Tooltips if you add them later */
+body.dark-mode .tooltip {
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid var(--border);
+}
+
+/* Print styles - always use light theme for printing */
+@media print {
+    body.dark-mode {
+        background: white !important;
+        color: black !important;
+    }
+    
+    body.dark-mode * {
+        background: transparent !important;
+        color: black !important;
+    }
+}

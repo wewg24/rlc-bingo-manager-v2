@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>RLC Bingo Manager</title>
+
+    <!-- Cache control meta tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css?v=11.7.0">
+    <link rel="stylesheet" href="css/dark-mode.css?v=11.7.0">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="50x50" href="assets/icons/icon-50.png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-50.png">
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .landing-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .header {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .header h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, #f9c910, #e6b800);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header .subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #1565C0;
+    }
+
+    .card p {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .qr-container {
+        margin: 20px 0;
+    }
+
+    .qr-code {
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
+    #qr-image {
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #qr-placeholder {
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .url-display {
+        font-family: 'Monaco', 'Consolas', monospace;
+        font-size: 12px;
+        color: #1565C0;
+        background: #e8f4fd;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-top: 10px;
+        word-break: break-all;
+        border: 1px solid #f9c910;
+    }
+
+    .btn {
+        background: linear-gradient(135deg, #f9c910, #e6b800);
+        color: #1565C0;
+        border: 2px solid #f9c910;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(249, 201, 16, 0.3);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #1565C0, #0D47A1);
+        color: white;
+        border-color: #1565C0;
+        box-shadow: 0 8px 25px rgba(21, 101, 192, 0.4);
+    }
+
+    .btn.admin {
+        background: linear-gradient(135deg, #1565C0, #0D47A1);
+        color: white;
+        border-color: #1565C0;
+        box-shadow: 0 4px 15px rgba(21, 101, 192, 0.3);
+    }
+
+    .btn.admin:hover {
+        background: linear-gradient(135deg, #f9c910, #e6b800);
+        color: #1565C0;
+        border-color: #f9c910;
+        box-shadow: 0 8px 25px rgba(249, 201, 16, 0.4);
+    }
+
+    .credentials-hint {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #666;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #2196F3;
+    }
+
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+        }
+
+        .landing-container {
+            padding: 20px 15px;
+        }
+
+        .header, .card {
+            padding: 25px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="header">
+            <h1><img src="assets/icons/icon-50.png" alt="RLC Logo" style="width: 50px; height: 50px; vertical-align: middle; margin-right: 15px;">RLC Bingo Manager</h1>
+            <p class="subtitle">Rolla Lions Club Bingo Management System</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <h3>📱 Occasion Entry</h3>
+                <p>Enter bingo occasion data using your smartphone or desktop browser.</p>
+                <div style="margin: 20px 0;">
+                    <a href="occasion.html" class="btn" style="display: inline-block; margin-bottom: 15px;">📋 Occasion Entry</a>
+                </div>
+                <p style="margin: 15px 0 10px; color: #666; font-size: 14px;">Or scan QR code for mobile access:</p>
+                <div class="qr-container">
+                    <div class="qr-code" id="occasion-qr">
+                        <div id="qr-placeholder" style="width: 150px; height: 150px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border: 2px dashed #ddd; flex-direction: column; font-size: 12px; text-align: center; border-radius: 8px; margin: 0 auto;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📱</div>
+                            <div>QR Code</div>
+                            <div style="margin-top: 5px; font-size: 10px; color: #666;">Loading...</div>
+                        </div>
+                        <img id="qr-image" src="" alt="QR Code" style="width: 150px; height: 150px; display: none;">
+                    </div>
+                    <div class="url-display" id="occasion-url">
+                        https://wewg24.github.io/rlc-bingo-manager/occasion.html
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚙️ Admin Dashboard</h3>
+                <p>Access the admin dashboard using your smartphone or desktop browser.</p>
+                <div style="margin: 20px 0;">
+                    <a href="admin.html" class="btn admin">⚙️ Admin Dashboard</a>
+                </div>
+                <p style="margin: 15px 0 10px; color: #666; font-size: 14px;">Or scan QR code for mobile access:</p>
+                <div class="qr-container">
+                    <div class="qr-code" id="admin-qr">
+                        <div id="admin-qr-placeholder" style="width: 150px; height: 150px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; border: 2px dashed #ddd; flex-direction: column; font-size: 12px; text-align: center; border-radius: 8px; margin: 0 auto;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">⚙️</div>
+                            <div>QR Code</div>
+                            <div style="margin-top: 5px; font-size: 10px; color: #666;">Loading...</div>
+                        </div>
+                        <img id="admin-qr-image" src="" alt="Admin QR Code" style="width: 150px; height: 150px; display: none;">
+                    </div>
+                    <div class="url-display" id="admin-url">
+                        https://wewg24.github.io/rlc-bingo-manager/admin.html
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Generate QR codes for both occasion entry and admin
+    function generateQRCodes() {
+        // Generate Occasion Entry QR Code
+        const occasionUrl = 'https://wewg24.github.io/rlc-bingo-manager/occasion.html';
+        const occasionQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(occasionUrl)}`;
+
+        const occasionQrImage = document.getElementById('qr-image');
+        const occasionQrPlaceholder = document.getElementById('qr-placeholder');
+
+        if (occasionQrImage && occasionQrPlaceholder) {
+            occasionQrImage.onload = function() {
+                occasionQrPlaceholder.style.display = 'none';
+                occasionQrImage.style.display = 'block';
+            };
+
+            occasionQrImage.onerror = function() {
+                occasionQrPlaceholder.innerHTML = `
+                    <div style="font-size: 20px; margin-bottom: 5px;">⚠️</div>
+                    <div>QR Generation Failed</div>
+                    <div style="margin-top: 5px; font-size: 10px;">Use URL below</div>
+                `;
+            };
+
+            occasionQrImage.src = occasionQrApiUrl;
+        }
+
+        // Generate Admin Dashboard QR Code
+        const adminUrl = 'https://wewg24.github.io/rlc-bingo-manager/admin.html';
+        const adminQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(adminUrl)}`;
+
+        const adminQrImage = document.getElementById('admin-qr-image');
+        const adminQrPlaceholder = document.getElementById('admin-qr-placeholder');
+
+        if (adminQrImage && adminQrPlaceholder) {
+            adminQrImage.onload = function() {
+                adminQrPlaceholder.style.display = 'none';
+                adminQrImage.style.display = 'block';
+            };
+
+            adminQrImage.onerror = function() {
+                adminQrPlaceholder.innerHTML = `
+                    <div style="font-size: 20px; margin-bottom: 5px;">⚠️</div>
+                    <div>QR Generation Failed</div>
+                    <div style="margin-top: 5px; font-size: 10px;">Use URL below</div>
+                `;
+            };
+
+            adminQrImage.src = adminQrApiUrl;
+        }
+    }
+
+    // Generate QR codes when page loads
+    document.addEventListener('DOMContentLoaded', generateQRCodes);
+    </script>
+</body>
+</html>

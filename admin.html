@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLC Bingo Admin Dashboard</title>
+    <meta name="description" content="Rolla Lions Club Bingo Administration Dashboard">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./css/admin.css">
+    <link rel="stylesheet" href="./css/offline-app.css">
+
+    <!-- Configuration -->
+    <script src="./js/config.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-header">
+            <h2>🦁 RLC Bingo Admin</h2>
+            <p>Rolla Lions Club Bingo Administration</p>
+        </div>
+        <form id="login-form">
+            <div id="login-alert" class="alert error hidden"></div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn" style="width: 100%">Login</button>
+        </form>
+    </div>
+
+    <!-- Main Admin Interface -->
+    <div id="admin-interface" class="hidden">
+        <div class="admin-container">
+            <!-- Header -->
+            <div class="header">
+                <h1>🦁 RLC Bingo Admin Dashboard</h1>
+                <div class="header-controls">
+                    <button id="theme-toggle" class="btn secondary">🌙</button>
+                    <button id="logout-btn" class="btn danger">Logout</button>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-container" style="margin-bottom: 20px;">
+                <div class="nav">
+                    <button id="nav-dashboard" class="btn">📊 Dashboard</button>
+                    <button id="nav-occasions" class="btn">📅 Occasions</button>
+                    <button id="nav-reports" class="btn">📈 Reports</button>
+                    <button id="nav-library" class="btn">🎮 Pull-Tab Library</button>
+                    <button id="nav-session-games" class="btn">🎯 Session Games</button>
+                    <button id="nav-offline-generator" class="btn">📱 Offline Generator</button>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view">
+                <!-- Dashboard content will be dynamically generated -->
+            </div>
+
+            <!-- Occasions View -->
+            <div id="occasions-view" class="view">
+                <!-- Occasions table will be dynamically generated -->
+            </div>
+
+            <!-- Reports View -->
+            <div id="reports-view" class="view">
+                <div class="card">
+                    <h3>Reports & Analytics</h3>
+                    <p>Generate comprehensive reports for your bingo operations.</p>
+                    <div class="grid">
+                        <div class="card">
+                            <h4>Financial Reports</h4>
+                            <button class="btn" onclick="window.adminInterface.generateFinancialReport()">Generate Report</button>
+                        </div>
+                        <div class="card">
+                            <h4>Player Statistics</h4>
+                            <button class="btn" onclick="window.adminInterface.generatePlayerReport()">Generate Report</button>
+                        </div>
+                        <div class="card">
+                            <h4>Session Analysis</h4>
+                            <button class="btn" onclick="window.adminInterface.generateSessionReport()">Generate Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pull-Tab Library View -->
+            <div id="library-view" class="view">
+                <!-- Pull-tab library will be dynamically generated -->
+            </div>
+
+            <!-- Session Games View -->
+            <div id="session-games-view" class="view">
+                <!-- Session games will be dynamically generated -->
+            </div>
+
+            <!-- Offline Generator View -->
+            <div id="offline-generator-view" class="view">
+                <div class="card">
+                    <h3>Offline App Generator</h3>
+                    <p>Generate a standalone offline application for mobile devices.</p>
+                    <div class="form-group">
+                        <label>Select Configurations to Include:</label>
+                        <div>
+                            <label><input type="checkbox" checked> Pull-Tab Library</label>
+                        </div>
+                        <div>
+                            <label><input type="checkbox" checked> Session Games</label>
+                        </div>
+                        <div>
+                            <label><input type="checkbox" checked> Recent Occasions</label>
+                        </div>
+                    </div>
+                    <button class="btn success" onclick="window.adminInterface.generateOfflineApp()">
+                        📱 Generate Offline App
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="./js/loading.js?v=11.9.0"></script>
+    <script src="./js/admin-interface.js?v=11.9.0"></script>
+    <script src="./js/api-service.js?v=11.9.0"></script>
+    <script src="./js/ui-components.js?v=11.9.0"></script>
+    <script src="./js/dashboard.js?v=11.9.0"></script>
+    <script src="./js/utilities.js?v=11.9.0"></script>
+    <script src="./js/crud-operations.js?v=11.9.0"></script>
+
+    <!-- Initialize Application -->
+    <script src="./js/admin-init.js?v=11.9.0"></script>
+</body>
+</html>
