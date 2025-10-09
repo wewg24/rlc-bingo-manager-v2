@@ -165,11 +165,34 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.2.0
+- **Frontend**: v2.3.0
 - **Backend**: v2.0.0 (no changes needed)
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-09)
+
+### v2.3.0 - Simplified Admin Dashboard
+
+#### Dashboard Redesign
+Completely simplified the admin dashboard to focus on the actual workflow: reviewing and managing occasions by status.
+
+#### Changes Made
+- **Removed superfluous sections**: Welcome message, metrics cards (Total Occasions, Completed, Draft, Total Players, Total Revenue, Net Profit), Recent Activity, Session Types, Quick Actions
+- **Consolidated occasions display**: All occasions now shown on Dashboard tab, categorized by status (Draft, Submitted, Finalized)
+- **Color-coded status indicators**: 🔵 Draft (blue), 🟡 Submitted (yellow), 🟢 Finalized (green)
+- **Streamlined workflow**: Dashboard shows exactly what needs review without clutter
+
+#### File Changes
+- **js/dashboard.js** (lines 10-174):
+  - Simplified `updateDashboardStats()` - removed complex calculations
+  - Rewrote `renderDashboard()` - clean status-based occasion display
+  - Added `renderReviewSection()` - renders occasions by status category
+  - Added `renderOccasionRowInline()` - displays individual occasion rows
+  - Cleaned up CSS styles - removed unused style rules
+
+#### Next Steps
+- Consider hiding Occasions and Reports navigation tabs (functionality now on Dashboard)
+- Test simplified dashboard with real occasion data
 
 ### v2.2.0 - V2 Enhanced Financial Format (31 Fields)
 

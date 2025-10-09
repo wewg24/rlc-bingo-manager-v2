@@ -8,256 +8,126 @@ class Dashboard {
     }
 
     /**
-     * Update dashboard statistics based on loaded data
+     * Update dashboard display based on loaded data
      */
     updateDashboardStats() {
         console.log('Dashboard: updateDashboardStats called');
         const occasions = this.adminInterface.occasions || [];
         console.log('Dashboard: occasions data:', occasions);
 
-        // Calculate basic stats
-        const totalOccasions = occasions.length;
-        const completedOccasions = occasions.filter(o => o.status === 'Completed').length;
-        const draftOccasions = occasions.filter(o => o.status === 'Draft').length;
-        const totalPlayers = occasions.reduce((sum, o) => sum + (o.totalPlayers || 0), 0);
-        const totalRevenue = occasions.reduce((sum, o) => sum + (o.totalRevenue || 0), 0);
-        const totalProfit = occasions.reduce((sum, o) => sum + (o.netProfit || 0), 0);
-
-        // Recent activity
-        const recentOccasions = occasions
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
-
-        // Session type distribution
-        const sessionTypeStats = this.calculateSessionTypeStats(occasions);
-
-        // Update the dashboard HTML
-        this.renderDashboard({
-            totalOccasions,
-            completedOccasions,
-            draftOccasions,
-            totalPlayers,
-            totalRevenue,
-            totalProfit,
-            recentOccasions,
-            sessionTypeStats
-        });
+        // Render the simplified dashboard
+        this.renderDashboard();
     }
 
     /**
-     * Calculate session type statistics
+     * Render the simplified dashboard - focuses on review workflow
      */
-    calculateSessionTypeStats(occasions) {
-        const stats = {};
-        occasions.forEach(occasion => {
-            const sessionType = occasion.sessionType || 'Unknown';
-            if (!stats[sessionType]) {
-                stats[sessionType] = {
-                    count: 0,
-                    players: 0,
-                    revenue: 0
-                };
-            }
-            stats[sessionType].count++;
-            stats[sessionType].players += occasion.totalPlayers || 0;
-            stats[sessionType].revenue += occasion.totalRevenue || 0;
-        });
-        return stats;
-    }
-
-    /**
-     * Render the complete dashboard
-     */
-    renderDashboard(stats) {
-        console.log('Dashboard: renderDashboard called with stats:', stats);
+    renderDashboard() {
+        console.log('Dashboard: renderDashboard called');
         const dashboardView = document.getElementById('dashboard-view');
-        console.log('Dashboard: dashboardView element:', dashboardView);
         if (!dashboardView) {
             console.error('Dashboard: dashboard-view element not found!');
             return;
         }
 
-        let welcomeCard = '';
-        if (stats.totalOccasions === 0) {
-            welcomeCard = `
-                <div class="card" style="text-align: center; padding: 40px; margin-bottom: 20px;">
-                    <h2>🏁 Welcome to RLC Bingo Admin!</h2>
-                    <p style="font-size: 16px; margin-bottom: 20px;">No occasions found in the system yet.</p>
-                    <a href="./occasion.html" class="btn success" target="_blank" style="font-size: 18px; padding: 12px 24px;">
-                        ➕ Create Your First Occasion
-                    </a>
-                </div>
-            `;
-        }
+        // Get occasions categorized by status
+        const occasions = this.adminInterface.occasions || [];
+        const draftOccasions = occasions.filter(o => o.status === 'draft' || o.status === 'Draft' || !o.status);
+        const submittedOccasions = occasions.filter(o => o.status === 'submitted' || o.status === 'Submitted');
+        const finalizedOccasions = occasions.filter(o => o.status === 'finalized' || o.status === 'Finalized');
 
+        // Simplified dashboard focused on review workflow
         const dashboardHtml = `
             <div class="dashboard-container">
-                ${welcomeCard}
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.totalOccasions}</div>
-                        <div class="stat-label">Total Occasions</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.completedOccasions}</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.draftOccasions}</div>
-                        <div class="stat-label">Draft</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${stats.totalPlayers.toLocaleString()}</div>
-                        <div class="stat-label">Total Players</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">$${stats.totalRevenue.toLocaleString()}</div>
-                        <div class="stat-label">Total Revenue</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">$${stats.totalProfit.toLocaleString()}</div>
-                        <div class="stat-label">Net Profit</div>
-                    </div>
-                </div>
-
-                <div class="grid">
-                    <div class="card">
-                        <h3>Recent Activity</h3>
-                        ${this.renderRecentActivity(stats.recentOccasions)}
-                    </div>
-
-                    <div class="card">
-                        <h3>Session Types</h3>
-                        ${this.renderSessionTypeStats(stats.sessionTypeStats)}
-                    </div>
-
-                    <div class="card">
-                        <h3>Quick Actions</h3>
-                        <div class="quick-actions">
-                            <a href="./occasion.html" class="btn success" target="_blank">
-                                📝 Create New Occasion
-                            </a>
-                            <button class="btn" onclick="window.adminInterface.showLibrary()">
-                                🎮 View Pull-Tab Library
-                            </button>
-                            <button class="btn" onclick="window.adminInterface.showSessionGames()">
-                                🎯 Manage Session Games
-                            </button>
-                            <button class="btn secondary" onclick="window.adminInterface.showReports()">
-                                📊 Generate Reports
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <h3>System Status</h3>
-                        <div class="system-status">
-                            <div class="status-item">
-                                <span class="status-indicator active"></span>
-                                <span>Google Apps Script API</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-indicator active"></span>
-                                <span>Pull-Tab Library (${this.adminInterface.pullTabLibrary?.length || 0} games)</span>
-                            </div>
-                            <div class="status-item">
-                                <span class="status-indicator active"></span>
-                                <span>Session Games (${Object.keys(this.adminInterface.sessionGames?.sessionTypes || {}).length} sessions)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card">
-                    <h3>Mobile Access</h3>
-                    <div class="qr-container">
-                        <div id="qr-code-container">
-                            <!-- QR code will be inserted here by utilities module -->
-                        </div>
-                        <p>Scan this QR code to access the mobile occasion entry form</p>
-                        <p><a href="./occasion.html" target="_blank">Or click here to open directly</a></p>
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="margin-bottom: 10px;">📋 Occasions Management</h2>
+                        <p style="color: #666;">
+                            Review and manage bingo occasions. All occasions are categorized by status below.
+                        </p>
                     </div>
+
+                    ${this.renderReviewSection('🔵 Draft Occasions', draftOccasions, 'draft')}
+                    ${this.renderReviewSection('🟡 Submitted Occasions', submittedOccasions, 'submitted')}
+                    ${this.renderReviewSection('🟢 Finalized Occasions', finalizedOccasions, 'finalized')}
                 </div>
             </div>
         `;
 
         dashboardView.innerHTML = dashboardHtml;
 
-        // Debug: Check element dimensions and visibility
-        const rect = dashboardView.getBoundingClientRect();
-        const computedStyle = window.getComputedStyle(dashboardView);
-        console.log('Dashboard: HTML successfully set, content length:', dashboardHtml.length);
-        console.log('Dashboard: Element dimensions:', {
-            width: rect.width,
-            height: rect.height,
-            top: rect.top,
-            left: rect.left
-        });
-        console.log('Dashboard: Computed styles:', {
-            display: computedStyle.display,
-            visibility: computedStyle.visibility,
-            position: computedStyle.position,
-            overflow: computedStyle.overflow
-        });
-        console.log('Dashboard: Parent container:', dashboardView.parentElement);
-
-        // Force visibility - removed debug background color
+        // Force visibility
         dashboardView.style.display = 'block';
         dashboardView.style.minHeight = '500px';
-        console.log('Dashboard: Applied clean styles for visibility');
+        console.log('Dashboard: Simplified dashboard rendered successfully');
     }
 
     /**
-     * Render recent activity list
+     * Render a review section for occasions with a specific status
      */
-    renderRecentActivity(recentOccasions) {
-        if (!recentOccasions || recentOccasions.length === 0) {
-            return '<p class="text-muted">No recent activity</p>';
+    renderReviewSection(title, occasions, statusType) {
+        if (!occasions || occasions.length === 0) {
+            return `
+                <div class="review-section" style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;">${title}</h3>
+                    <p style="color: #999; padding: 20px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                        No ${statusType} occasions at this time
+                    </p>
+                </div>
+            `;
         }
 
         return `
-            <div class="recent-activity">
-                ${recentOccasions.map(occasion => `
-                    <div class="activity-item">
-                        <div class="activity-date">${new Date(occasion.date).toLocaleDateString()}</div>
-                        <div class="activity-details">
-                            <strong>${CONFIG.SESSION_TYPES?.[occasion.sessionType] || occasion.sessionType}</strong>
-                            <span class="text-muted">• ${occasion.lionInCharge}</span>
-                            <span class="status ${occasion.status.toLowerCase()}">${occasion.status}</span>
-                        </div>
-                    </div>
-                `).join('')}
+            <div class="review-section" style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px;">${title} (${occasions.length})</h3>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Session Type</th>
+                                <th>Lion in Charge</th>
+                                <th>Players</th>
+                                <th>Revenue</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${occasions.map(occasion => this.renderOccasionRowInline(occasion)).join('')}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
     }
 
     /**
-     * Render session type statistics
+     * Render an occasion row (inline version for dashboard)
      */
-    renderSessionTypeStats(sessionTypeStats) {
-        if (!sessionTypeStats || Object.keys(sessionTypeStats).length === 0) {
-            return '<p class="text-muted">No session data available</p>';
-        }
+    renderOccasionRowInline(occasion) {
+        const formattedDate = new Date(occasion.date).toLocaleDateString();
+        const sessionTypeName = CONFIG.SESSION_TYPES ? (CONFIG.SESSION_TYPES[occasion.sessionType] || occasion.sessionType) : occasion.sessionType;
 
         return `
-            <div class="session-type-stats">
-                ${Object.entries(sessionTypeStats).map(([type, stats]) => `
-                    <div class="session-stat-item">
-                        <div class="session-stat-header">
-                            <strong>${CONFIG.SESSION_TYPES?.[type] || type}</strong>
-                            <span class="badge">${stats.count}</span>
-                        </div>
-                        <div class="session-stat-details">
-                            <small>
-                                ${stats.players.toLocaleString()} players •
-                                $${stats.revenue.toLocaleString()} revenue
-                            </small>
-                        </div>
+            <tr>
+                <td><strong>${formattedDate}</strong></td>
+                <td>${sessionTypeName}</td>
+                <td>${occasion.lionInCharge || 'N/A'}</td>
+                <td>${occasion.totalPlayers || 0}</td>
+                <td>$${(occasion.totalRevenue || 0).toLocaleString()}</td>
+                <td><span class="status ${occasion.status.toLowerCase()}">${occasion.status}</span></td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm" onclick="window.adminInterface.uiComponents.viewOccasion('${occasion.id}')">View</button>
+                        <button class="btn btn-sm warning" onclick="window.adminInterface.uiComponents.editOccasion('${occasion.id}')">Edit</button>
+                        <button class="btn btn-sm danger" onclick="window.adminInterface.uiComponents.deleteOccasion('${occasion.id}')">Delete</button>
                     </div>
-                `).join('')}
-            </div>
+                </td>
+            </tr>
         `;
     }
+
 
     /**
      * Add custom CSS for dashboard components
@@ -269,91 +139,58 @@ class Dashboard {
         const style = document.createElement('style');
         style.id = 'dashboard-styles';
         style.textContent = `
-            .quick-actions {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+            .dashboard-container {
+                padding: 20px;
             }
 
-            .quick-actions .btn {
-                justify-content: flex-start;
-                text-align: left;
+            .review-section {
+                margin-bottom: 30px;
             }
 
-            .system-status {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
+            .review-section h3 {
+                margin-bottom: 15px;
+                font-size: 1.25rem;
+                font-weight: 600;
             }
 
-            .status-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .status-indicator {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background: #dc3545;
-            }
-
-            .status-indicator.active {
-                background: #28a745;
-            }
-
-            .recent-activity {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .activity-item {
-                padding: 10px;
-                background: #f8f9fa;
+            .table-container {
+                overflow-x: auto;
+                background: white;
                 border-radius: 4px;
-                border-left: 3px solid #2196F3;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
 
-            .activity-date {
+            .btn-group {
+                display: flex;
+                gap: 5px;
+            }
+
+            .btn-sm {
+                padding: 4px 8px;
                 font-size: 12px;
-                color: #666;
-                margin-bottom: 5px;
             }
 
-            .activity-details {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-
-            .session-type-stats {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .session-stat-item {
-                padding: 10px;
-                background: #f8f9fa;
+            .status {
+                padding: 4px 8px;
                 border-radius: 4px;
-            }
-
-            .session-stat-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 5px;
-            }
-
-            .badge {
-                background: #2196F3;
-                color: white;
-                padding: 2px 8px;
-                border-radius: 12px;
                 font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            .status.draft {
+                background: #e3f2fd;
+                color: #1976d2;
+            }
+
+            .status.submitted {
+                background: #fff3e0;
+                color: #f57c00;
+            }
+
+            .status.finalized {
+                background: #e8f5e9;
+                color: #388e3c;
             }
         `;
 
