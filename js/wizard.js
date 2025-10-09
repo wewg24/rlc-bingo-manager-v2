@@ -290,6 +290,20 @@ async function saveToBackend() {
         }
 
         if (result.success) {
+            // Save the returned ID to prevent duplicate saves
+            if (result.data && result.data.id) {
+                if (!window.app.data.id) {
+                    console.log('Saving returned occasion ID:', result.data.id);
+                    window.app.data.id = result.data.id;
+                    // Also save to localStorage
+                    try {
+                        localStorage.setItem('rlcBingoOccasionData', JSON.stringify(window.app.data));
+                    } catch (e) {
+                        console.warn('Could not update localStorage with new ID:', e);
+                    }
+                }
+            }
+
             // Show success notification
             if (window.showNotification) {
                 window.showNotification('✅ Saved to server successfully!', 'success');
@@ -1896,8 +1910,11 @@ function loadMoneyCount() {
     const pullTabData = moneyData.pullTab || moneyData.pulltab;
     if (pullTabData) {
         Object.entries(pullTabData).forEach(([key, value]) => {
-            // Use 'pt-' prefix for pull-tab drawer inputs
-            const input = document.getElementById(`pt-${key}`);
+            // Skip 'total' key since it's calculated, not an input
+            if (key === 'total') return;
+
+            // Use 'pt-drawer-' prefix for pull-tab drawer inputs
+            const input = document.getElementById(`pt-drawer-${key}`);
             if (input) {
                 input.value = value || 0;
             }
@@ -2507,11 +2524,16 @@ function calculateFinalTotals() {
 
     // Grand totals
     const totalSales = bingoSales + pullTabSales;
+    const grossSales = totalSales; // Alias for Review tab compatibility
     const totalPrizesPaid = bingoPrizesPaid + pullTabPrizes;
     const totalPrizesPaidByCheck = prizesPaidByCheck; // From games check payments
     const totalNetProfit = totalSales - totalPrizesPaid;
     const totalNetDeposit = totalActualDeposit - bingoStartupCash;
     const totalOverShort = totalNetDeposit - totalNetProfit;
+    const actualProfit = totalNetDeposit; // Alias for Review tab
+    const idealProfit = totalNetProfit; // Alias for Review tab
+    const overShort = totalOverShort; // Alias for Review tab
+    const totalDeposit = totalActualDeposit; // Alias for Review tab
 
     // Save V2 Enhanced Financial Data (30+ fields)
     if (window.app && window.app.data) {
