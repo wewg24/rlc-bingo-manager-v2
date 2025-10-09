@@ -165,11 +165,46 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.0
+- **Frontend**: v2.3.1
 - **Backend**: v2.0.0 (no changes needed)
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-09)
+
+### v2.3.1 - Critical Bug Fixes for Occasion Entry
+
+#### Issues Identified from Testing
+After thorough testing with real data (2025-07-14 occasion), identified and fixed 4 critical bugs:
+
+#### Bug Fixes
+
+**1. ReferenceError: grossSales is not defined** (wizard.js:2577)
+- **Symptom**: Review tab showed all $0.00 values for Gross Sales, Bingo Prizes, Pull-Tab Prizes, etc.
+- **Root Cause**: Variables `grossSales`, `actualProfit`, `idealProfit`, `overShort`, `totalDeposit` were used but never declared
+- **Fix**: Added variable declarations in `calculateFinalTotals()` at line 2510-2519
+- **Impact**: Review tab now displays all financial metrics correctly
+
+**2. Pull-Tab Money Count Not Loading** (wizard.js:1903)
+- **Symptom**: Pull-tab denominations saved correctly (total: $1577) but individual denominations showed as $0
+- **Root Cause**: `loadMoneyCount()` looked for input IDs like `pt-100` but actual IDs are `pt-drawer-100`
+- **Fix**: Changed input ID prefix from `'pt-'` to `'pt-drawer-'` in loadMoneyCount()
+- **Impact**: Pull-tab denominations now load correctly from saved occasions
+
+**3. Duplicate Occasions Created on Multiple Saves** (wizard.js:292-305)
+- **Symptom**: Clicking "Save to Server" multiple times created duplicate occasions (OCC_1760031938706, OCC_1760031994616, OCC_1760032241928)
+- **Root Cause**: New occasions have no ID, so each save created a new occasion instead of updating existing
+- **Fix**: Capture returned occasion ID from first successful save and store in `window.app.data.id` + localStorage
+- **Impact**: Subsequent saves UPDATE existing occasion instead of creating duplicates
+
+**4. PDF Report Money Count Shows $0.00** (reports.js:534-576)
+- **Symptom**: PDF Money Count section showed $0.00 for both Bingo Drawer and Pull-Tab Drawer
+- **Root Cause**: Code looked for non-existent properties like `moneyCount.bingo.cashTotal` and `moneyCount.bingo.drawerTotal`
+- **Fix**: Changed to use V2 enhanced financial data (`financial.bingoDeposit`, `financial.pullTabNetDeposit`)
+- **Impact**: PDF reports now show accurate money count data ($1879 bingo, $1577 pull-tab)
+
+#### Files Modified
+- **js/wizard.js** (Lines 1903, 2510-2519, 292-305): Fixed input loading, variable declarations, duplicate prevention
+- **js/reports.js** (Lines 534-576): Fixed PDF money count display
 
 ### v2.3.0 - Simplified Admin Dashboard
 
