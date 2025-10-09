@@ -165,6 +165,39 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.0.0
-- **Backend**: v2.0.0
-- **Status**: In Development
+- **Frontend**: v2.1.0
+- **Backend**: v2.0.0 (no changes needed)
+- **Status**: Ready for Testing
+
+## Recent Changes (2025-10-09)
+
+### v2.1.0 - Complete Draft/Submitted/Finalized Workflow
+
+#### Critical Fixes
+1. **Added Backend Save Button** - "Save to Server" button now persists drafts to Google Drive (not just localStorage)
+2. **Submit Sets Status** - "Submit Occasion" now properly sets `status: 'submitted'` to lock from mobile edits
+3. **Admin Status Management** - Admin "Edit" button opens modal to change status (submitted→draft for re-editing)
+4. **Missing Admin Files** - Copied 7 admin JavaScript files from V1 (admin was completely broken)
+
+#### New Features
+- **saveToBackend()** function in wizard.js (lines 176-318)
+  - Validates occasion date before saving
+  - Checks for existing occasions via JSONP
+  - Warns if overwriting non-draft occasions
+  - Explicitly sets `status: 'draft'`
+- **Edit Occasion Modal** in ui-components.js (lines 693-829)
+  - Loads full occasion data
+  - Status dropdown (draft/submitted/finalized)
+  - Saves changes and reloads table
+
+#### Workflow
+1. **Mobile (occasion.html)**:
+   - "📝 Local Draft" button → localStorage only (auto-save between tabs)
+   - "💾 Save to Server" button → Google Drive with status='draft'
+   - "Submit Occasion" button → Google Drive with status='submitted' (locks from editing)
+   - Finalized occasions → Read-only mode
+
+2. **Admin (admin.html)**:
+   - View all occasions with status column
+   - Click "Edit" to change status
+   - Change submitted/finalized → draft to allow mobile re-editing
