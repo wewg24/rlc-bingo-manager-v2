@@ -695,9 +695,93 @@ class UIComponents {
         }
     }
 
-    viewOccasion(occasionId) {
+    async viewOccasion(occasionId) {
         console.log('View occasion:', occasionId);
-        // Implementation will be in CRUD operations module
+
+        try {
+            // Load occasion data
+            const callbackName = 'loadOccasionCallback_' + Date.now();
+            let occasionData = null;
+
+            await new Promise((resolve, reject) => {
+                window[callbackName] = function(response) {
+                    if (response.success && response.data) {
+                        occasionData = response.data;
+                    }
+                    delete window[callbackName];
+                    resolve();
+                };
+
+                const script = document.createElement('script');
+                script.src = `${CONFIG.API_URL}?action=loadOccasion&id=${occasionId}&callback=${callbackName}`;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    reject(new Error('Failed to load occasion'));
+                };
+                document.head.appendChild(script);
+
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        delete window[callbackName];
+                        reject(new Error('Timeout loading occasion'));
+                    }
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                }, 10000);
+            });
+
+            if (!occasionData) {
+                throw new Error('No occasion data loaded');
+            }
+
+            const occasion = occasionData.occasion || {};
+            const financial = occasionData.financial || {};
+
+            // Show view modal with all details
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3>View Occasion - ${occasion.date || 'Unknown'}</h3>
+                        <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <h4 style="margin-top: 0; color: #2196F3;">Occasion Details</h4>
+                        <table class="details-table">
+                            <tr><td><strong>Date:</strong></td><td>${occasion.date || 'N/A'}</td></tr>
+                            <tr><td><strong>Session:</strong></td><td>${occasion.sessionType || 'N/A'}</td></tr>
+                            <tr><td><strong>Lion in Charge:</strong></td><td>${occasion.lionInCharge || 'N/A'}</td></tr>
+                            <tr><td><strong>Pull-Tab Worker:</strong></td><td>${occasion.lionPullTabs || 'N/A'}</td></tr>
+                            <tr><td><strong>Total Players:</strong></td><td>${occasion.totalPlayers || 0}</td></tr>
+                            <tr><td><strong>Birthdays (BOGOs):</strong></td><td>${occasion.birthdays || occasion.birthdayBOGOs || 0}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="status ${occasionData.status}">${occasionData.status || 'draft'}</span></td></tr>
+                        </table>
+
+                        <h4 style="margin-top: 20px; color: #2196F3;">Financial Summary</h4>
+                        <table class="details-table">
+                            <tr><td><strong>Bingo Sales:</strong></td><td>$${(financial.bingoSales || 0).toLocaleString()}</td></tr>
+                            <tr><td><strong>Pull-Tab Sales:</strong></td><td>$${(financial.pullTabSales || 0).toLocaleString()}</td></tr>
+                            <tr><td><strong>Total Sales:</strong></td><td>$${(financial.totalSales || 0).toLocaleString()}</td></tr>
+                            <tr><td><strong>Bingo Prizes:</strong></td><td>$${(financial.bingoPrizesPaid || 0).toLocaleString()}</td></tr>
+                            <tr><td><strong>Pull-Tab Prizes:</strong></td><td>$${(financial.pullTabPrizes || 0).toLocaleString()}</td></tr>
+                            <tr><td><strong>Total Prizes:</strong></td><td>$${(financial.totalPrizesPaid || 0).toLocaleString()}</td></tr>
+                            <tr style="border-top: 2px solid #2196F3;"><td><strong>Net Profit:</strong></td><td><strong>$${(financial.totalNetProfit || 0).toLocaleString()}</strong></td></tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn secondary" onclick="this.closest('.modal-overlay').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+        } catch (error) {
+            console.error('Error loading occasion for view:', error);
+            this.adminInterface.utilities.showAlert(`Failed to load occasion: ${error.message}`, 'error');
+        }
     }
 
     async editOccasion(occasionId) {
@@ -750,35 +834,36 @@ class UIComponents {
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h3>Edit Occasion - ${occasionDate}</h3>
+                        <button type="button" class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
                     </div>
                     <form id="edit-occasion-form">
                         <div class="modal-body">
                             <div class="form-group">
                                 <label><strong>Occasion ID:</strong></label>
-                                <input type="text" value="${occasionId}" class="form-control" readonly>
+                                <input type="text" value="${occasionId}" class="form-control" readonly style="background: #f5f5f5;">
                             </div>
                             <div class="form-group">
                                 <label><strong>Date:</strong></label>
-                                <input type="text" value="${occasionDate}" class="form-control" readonly>
+                                <input type="text" value="${occasionDate}" class="form-control" readonly style="background: #f5f5f5;">
                             </div>
                             <div class="form-group">
                                 <label><strong>Session:</strong></label>
-                                <input type="text" value="${occasionData.occasion?.sessionType || 'N/A'}" class="form-control" readonly>
+                                <input type="text" value="${occasionData.occasion?.sessionType || 'N/A'}" class="form-control" readonly style="background: #f5f5f5;">
                             </div>
                             <div class="form-group">
                                 <label><strong>Status:</strong></label>
-                                <select name="status" class="form-control" required>
+                                <select name="status" class="form-control" required autofocus>
                                     <option value="draft" ${currentStatus === 'draft' ? 'selected' : ''}>Draft</option>
                                     <option value="submitted" ${currentStatus === 'submitted' ? 'selected' : ''}>Submitted</option>
                                     <option value="finalized" ${currentStatus === 'finalized' ? 'selected' : ''}>Finalized</option>
                                 </select>
                                 <small style="color: #666; display: block; margin-top: 0.5rem;">
-                                    Change status to "Draft" to allow editing in mobile interface
+                                    💡 Change to "Draft" to allow editing in mobile interface
                                 </small>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn success">Save Changes</button>
+                            <button type="submit" class="btn success">💾 Save Changes</button>
                             <button type="button" class="btn secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                         </div>
                     </form>
@@ -838,9 +923,58 @@ class UIComponents {
         }
     }
 
-    deleteOccasion(occasionId) {
+    async deleteOccasion(occasionId) {
         console.log('Delete occasion:', occasionId);
-        // Implementation will be in CRUD operations module
+
+        // Get occasion date for confirmation message
+        const occasion = this.adminInterface.occasions?.find(o => o.id === occasionId);
+        const occasionDate = occasion?.occasion?.date || occasion?.date || 'Unknown';
+
+        // Confirm deletion
+        const confirmMessage = `⚠️ Are you sure you want to delete the occasion for ${occasionDate}?\n\n` +
+                             `Occasion ID: ${occasionId}\n\n` +
+                             `This action CANNOT be undone!`;
+
+        if (!confirm(confirmMessage)) {
+            console.log('Deletion cancelled by user');
+            return;
+        }
+
+        try {
+            // Delete occasion from backend
+            const response = await fetch(CONFIG.API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'deleteOccasion',
+                    id: occasionId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.adminInterface.utilities.showAlert(`✅ Occasion ${occasionDate} deleted successfully`, 'success');
+
+                // Reload occasions table
+                if (this.adminInterface.apiService) {
+                    this.adminInterface.apiService.loadOccasionsTable();
+                }
+
+                // Reload dashboard if visible
+                if (this.adminInterface.dashboard) {
+                    this.adminInterface.loadDashboard();
+                }
+            } else {
+                throw new Error(result.message || 'Delete failed');
+            }
+
+        } catch (error) {
+            console.error('Error deleting occasion:', error);
+            this.adminInterface.utilities.showAlert(`❌ Failed to delete occasion: ${error.message}`, 'error');
+        }
     }
 }
 
