@@ -2726,8 +2726,9 @@ async function submitOccasion() {
 
         console.log('✅ Submitting occasion with status:', submissionData.status);
         console.log('📤 Full submission data includes status field:', 'status' in submissionData);
+        console.log('📤 Submission data keys:', Object.keys(submissionData));
 
-        // Submit to backend
+        // Submit to backend with status as separate parameter to ensure it's preserved
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',
             headers: {
@@ -2735,6 +2736,9 @@ async function submitOccasion() {
             },
             body: new URLSearchParams({
                 action: 'saveOccasion',
+                status: 'submitted',  // Send status separately
+                submittedAt: submissionData.submittedAt,
+                submittedBy: submissionData.submittedBy,
                 data: JSON.stringify(submissionData)
             })
         });
