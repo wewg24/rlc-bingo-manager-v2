@@ -165,9 +165,79 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.8
-- **Backend**: v2.3.8
+- **Frontend**: v2.3.9
+- **Backend**: v2.3.8 (no changes)
 - **Status**: Ready for Testing
+
+## Recent Changes (2025-10-10)
+
+### v2.3.9 - Critical Bug Fixes for Financial Calculations and Data Saving
+
+#### Major Issues Fixed
+Fixed multiple critical bugs identified during user testing that caused financial data to save as 0 and pull-tab drawer data to be lost.
+
+**1. Financial Data Saving as $0 (bingoPrizesPaid, totalPrizesPaid, pullTabPrizesPaid, specialEventSales, specialEventPrizesPaid)**
+
+**Root Cause:**
+- Old `calculateComprehensiveFinancials()` function in app.js was being called by `savePaperSales()` and `savePullTabs()`
+- This function had bugs: checking `pt.isSpecial` instead of `pt.isSpecialEvent`, using `pt.tickets` instead of `pt.sales`, using `pt.prizes` instead of `pt.prizesPaid`
+- It was overwriting the correct values from `calculateFinalTotals()` with zeros
+- When "Save to Server" or "Submit Occasion" executed, it called `saveStepData()` for all tabs, which triggered the buggy function
+
+**Solution:**
+- Call `calculateFinalTotals()` AFTER all `saveStepData()` calls in both `saveToBackend()` and `submitOccasion()`
+- This recalculates all financial fields with correct values immediately before sending to backend
+
+**Files Modified:**
+- js/wizard.js (lines 201-205, 2723-2727): Added calculateFinalTotals() calls after all saves
+
+**2. Pull-Tab Drawer Saving as All Zeros**
+
+**Root Cause:**
+- `saveMoneyCount()` function used wrong input ID prefix: `pt-${denom}` instead of `pt-drawer-${denom}`
+- This caused `document.getElementById()` to return null, so all values defaulted to 0
+- v2.3.1 fixed the LOADING side but missed the SAVING side
+
+**Solution:**
+- Changed input ID prefix in `saveMoneyCount()` from `pt-` to `pt-drawer-` to match actual input IDs
+
+**Files Modified:**
+- js/wizard.js (line 1086): Fixed input ID prefix
+
+**3. JSONP Callback Cleanup Error**
+
+**Symptom:** `Uncaught ReferenceError: saveCheckCallback_1760111210598 is not defined` on second "Save to Server" execution
+
+**Root Cause:**
+- Script element not removed immediately after callback executed
+- If script tried to call callback again, it would fail because callback was already deleted
+- Cleanup timeout (5 seconds) was too slow
+
+**Solution:**
+- Move script element removal into callback function itself (execute immediately)
+- Also remove in error handler
+- Increase failsafe timeout from 5 to 10 seconds
+
+**Files Modified:**
+- js/wizard.js (lines 226-260): Reorganized JSONP cleanup to remove script immediately
+
+**4. PDF Report Session Games Table**
+
+**User Request:** Remove "Status" column, add "Per Winner" column between "Winners" and "Total"
+
+**Changes:**
+- Table now shows: #, Game Name, Prize (base prize), Winners, Per Winner (actual payout per winner), Total, Check
+- Removed "Status" column (showed "Not Played" status)
+- Total row colspan adjusted from 4 to 5
+
+**Files Modified:**
+- js/reports.js (lines 434-439, 454-467): Updated table structure and headers
+
+#### Impact
+- All financial metrics now save correctly with accurate values
+- Pull-tab drawer denominations persist correctly when saving/reloading
+- "Save to Server" can be executed multiple times without errors
+- PDF reports show clearer prize breakdown with per-winner amounts
 
 ## Recent Changes (2025-10-09)
 
