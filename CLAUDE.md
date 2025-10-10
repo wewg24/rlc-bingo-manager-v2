@@ -12,10 +12,11 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycbx3A7363PHe2GhHxbTW-R_D1BjP-Skt7-znnjkpO1qV7gYrT2OePNwvWMdgVVkHQ1OPtA/exec
+- **Web App URL**: https://script.google.com/macros/s/AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA/exec
 - **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
-- **Deployment**: Version 10 (Web App - 2025-10-10)
-- **Deployment ID**: `AKfycbx3A7363PHe2GhHxbTW-R_D1BjP-Skt7-znnjkpO1qV7gYrT2OePNwvWMdgVVkHQ1OPtA`
+- **Deployment**: Version 9 (Web App - 2025-10-10) - Uses latest code from clasp push
+- **Deployment ID**: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
+- **Note**: Backend code updated via `clasp push` - existing Web App deployment uses latest code automatically
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
 - **Timezone**: America/Chicago
