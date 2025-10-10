@@ -12,16 +12,17 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycbzpS12P38xjggfluuj8i2emlzdhaSGfCXXctdsWiwBXKYxfHQ1Xrzcdaotzf-CVFiG-FQ/exec
-- **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/5
-- **Deployment**: Version 5 (Web App - 2025-10-09 10:16 AM)
-- **Deployment ID**: `AKfycbzpS12P38xjggfluuj8i2emlzdhaSGfCXXctdsWiwBXKYxfHQ1Xrzcdaotzf-CVFiG-FQ`
+- **Web App URL**: https://script.google.com/macros/s/AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA/exec
+- **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
+- **Deployment**: Version 8 (Web App - 2025-10-10 1:45 PM)
+- **Deployment ID**: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
 - **Timezone**: America/Chicago
 - **Deploy Process**:
   1. `clasp push` to upload Code.js + appsscript.json
   2. Deploy → New deployment → Web app (via Google Apps Script editor)
+  3. **IMPORTANT**: Must create Web App deployment (NOT Library deployment)
 
 ## V2 JSON Format Specification
 
@@ -165,11 +166,49 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.10
-- **Backend**: v2.3.10
-- **Status**: Ready for Testing
+- **Frontend**: v2.3.11
+- **Backend**: v2.3.11
+- **Status**: Production
 
 ## Recent Changes (2025-10-10)
+
+### v2.3.11 - Add Rebuild Index Button and Fix Backend Deployment
+
+#### Admin Dashboard Enhancement
+
+**Feature:** Added "Rebuild Index" button to Occasions Management section
+
+**What it does:**
+- Button located in header of Occasions Management section (top-right)
+- Calls `updateOccasionsIndex` API endpoint to regenerate occasions-index.json
+- Scans all occasion files across all year folders
+- Includes financial data in index (bingoSales, pullTabSales, totalSales, etc.)
+- Shows confirmation dialog before rebuilding
+- Displays loading spinner during rebuild operation
+- Shows success message with occasion count and timestamp
+- Automatically reloads dashboard with updated data after rebuild
+
+**Why this is needed:**
+- The occasions-index.json file was missing financial data
+- Dashboard table showed "Unknown", "N/A", $0 for all columns
+- View button worked because it loads full occasion JSON file
+- Index needed to be regenerated to include financial data
+
+**Files Modified:**
+- **js/dashboard.js**: Added `rebuildIndex()` method and button in header
+- **js/config.js**: Updated API_URL to new Web App deployment, bumped VERSION to 2.3.11
+- **admin.html**: Updated version numbers from v2.3.6 to v2.3.11
+- **CLAUDE.md**: Updated deployment information
+
+**Backend Deployment Fix:**
+- Created proper Web App deployment (not Library deployment)
+- New Deployment ID: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
+- Backend now properly includes financial data when building index (lines 1267, 1302 in Code.js)
+
+**Impact:**
+- Users can now rebuild index whenever data gets out of sync
+- Dashboard displays correct occasion data (date, session, lion, players, revenue)
+- Backend properly deployed as Web App (fixed 404 JSONP errors)
 
 ### v2.3.10 - Fix Admin Dashboard Display and Enhanced Submit Debugging
 

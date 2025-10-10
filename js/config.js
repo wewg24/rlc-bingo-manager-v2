@@ -2,9 +2,9 @@
 // V2.0.0 - Enhanced with new financial tracking structure
 
 window.CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbzpS12P38xjggfluuj8i2emlzdhaSGfCXXctdsWiwBXKYxfHQ1Xrzcdaotzf-CVFiG-FQ/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA/exec',
     APP_NAME: 'RLC Bingo Manager V2',
-    VERSION: '2.0.0',
+    VERSION: '2.3.11',
 
     // Startup cash for bingo drawer
     BINGO_STARTUP_CASH: 1000,
