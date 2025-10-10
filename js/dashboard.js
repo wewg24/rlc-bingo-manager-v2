@@ -91,10 +91,12 @@ class Dashboard {
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Session Type</th>
-                                <th>Lion in Charge</th>
+                                <th>Session</th>
+                                <th>Closet</th>
+                                <th>Pull-Tabs</th>
                                 <th>Players</th>
-                                <th>Revenue</th>
+                                <th>Profit</th>
+                                <th>Offage</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -110,29 +112,48 @@ class Dashboard {
 
     /**
      * Render an occasion row (inline version for dashboard)
+     * Reads directly from backend index structure (no transformation)
      */
     renderOccasionRowInline(occasion) {
-        // Occasion data structure from API has nested 'occasion' object
+        // Backend index stores: {id, date, session, occasion: {...}, financial: {...}, status}
         const occasionData = occasion.occasion || {};
+        const financial = occasion.financial || {};
 
+        // Date
         const formattedDate = new Date(occasion.date).toLocaleDateString();
-        const sessionType = occasion.session || occasionData.sessionType || 'Unknown';
-        const sessionTypeName = CONFIG.SESSION_TYPES ? (CONFIG.SESSION_TYPES[sessionType] || sessionType) : sessionType;
-        const lionInCharge = occasionData.lionInCharge || 'N/A';
-        const totalPlayers = occasionData.totalPlayers || 0;
 
-        // Revenue from financial data if available
-        const financial = occasion.financial || occasionData.financial || {};
-        const totalRevenue = financial.totalSales || financial.grossSales || 0;
+        // Session (convert code to name)
+        const sessionType = occasion.session || 'Unknown';
+        const sessionTypeName = CONFIG.SESSION_TYPES?.[sessionType] || sessionType;
+
+        // Closet (Lion in Charge)
+        const closetWorker = occasionData.lionInCharge || 'N/A';
+
+        // Pull-Tabs (Lion in Charge of Pull-Tabs)
+        const pullTabWorker = occasionData.lionPullTabs || 'N/A';
+
+        // Players
+        const players = occasionData.totalPlayers || 0;
+
+        // Profit (Net Profit)
+        const profit = financial.totalNetProfit || 0;
+
+        // Offage (Over/Short)
+        const offage = financial.totalOverShort || 0;
+
+        // Status
+        const status = occasion.status || 'draft';
 
         return `
             <tr>
                 <td><strong>${formattedDate}</strong></td>
                 <td>${sessionTypeName}</td>
-                <td>${lionInCharge}</td>
-                <td>${totalPlayers}</td>
-                <td>$${totalRevenue.toLocaleString()}</td>
-                <td><span class="status ${occasion.status.toLowerCase()}">${occasion.status}</span></td>
+                <td>${closetWorker}</td>
+                <td>${pullTabWorker}</td>
+                <td>${players}</td>
+                <td>$${profit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td style="color: ${offage >= 0 ? 'green' : 'red'};">$${offage.toFixed(2)}</td>
+                <td><span class="status ${status.toLowerCase()}">${status}</span></td>
                 <td>
                     <div class="btn-group">
                         <button class="btn btn-sm" onclick="window.adminInterface.uiComponents.viewOccasion('${occasion.id}')">View</button>

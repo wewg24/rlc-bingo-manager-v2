@@ -167,9 +167,109 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.12
-- **Backend**: v2.3.12
+- **Frontend**: v2.3.13
+- **Backend**: v2.3.12 (no backend changes in this release)
 - **Status**: Production
+
+## Recent Changes (2025-10-10)
+
+### v2.3.13 - Dashboard Display Fixed & Comprehensive Improvements
+
+#### **COMPLETE FIX: Dashboard Occasions Management Table** ✅
+
+**Issue**: Dashboard table displayed "Unknown", "N/A", $0 for all occasions despite correct data in files.
+
+**Root Cause**: Data structure mismatch between backend index and dashboard rendering. Backend stores `{occasion: {...}, financial: {...}}` but dashboard tried to read transformed data structure.
+
+**Solution**: Updated dashboard to read DIRECTLY from backend index structure (no transformation layer).
+
+**New Column Headers** (User-Specified):
+- Date
+- Session
+- Closet (Lion in Charge)
+- Pull-Tabs (Lion in Charge of Pull-Tabs) - **NOW DISPLAYED**
+- Players
+- Profit (Net Profit) - **NOW SHOWS totalNetProfit**
+- Offage (Over/Short) - **NEW COLUMN** with color coding (green=positive, red=negative)
+- Status
+- Actions
+
+**Files Modified**:
+- `js/dashboard.js` (lines 93-166): Updated table headers and renderOccasionRowInline() to read from index structure
+- `js/ui-components.js` (lines 245-316): Updated Occasions table to match dashboard format
+
+**Impact**: Dashboard now displays ALL data correctly from index without need for transformation.
+
+---
+
+#### **FIX: Admin Dashboard Link Corrected** ✅
+
+**Issue**: Hamburger menu in occasion.html linked to v1 project instead of v2.
+
+**Fix**: Updated link from `https://wewg24.github.io/rlc-bingo-manager/admin.html` to `https://wewg24.github.io/rlc-bingo-manager-v2/admin.html`
+
+**File**: `occasion.html` (line 1059)
+
+---
+
+#### **FIX: Progressive Data Loading in Editor** ✅
+
+**Issue**: Progressive jackpot and balls to win not loading when editing occasions from admin dashboard.
+
+**Root Cause**: `checkAndLoadOccasionFromUrl()` called `loadAllStepData()` which doesn't load progressive data. Progressive data is loaded by `loadOccasionData()` function.
+
+**Fix**: Changed to call `loadOccasionData()` which handles progressive data loading (lines 491-496).
+
+**File**: `js/wizard.js` (line 2953)
+
+**Impact**: Progressive jackpot, balls to win, and consolation prize now load correctly when editing occasions.
+
+---
+
+#### **ENHANCEMENT: Auto-Rebuild Index After Status Change** ✅
+
+**Issue**: Editing occasion status in admin dashboard didn't update the index, requiring manual "Rebuild Index" click.
+
+**Fix**: Added automatic index rebuild after successful status update.
+
+**File**: `js/ui-components.js` (lines 932-936)
+
+**Impact**: Status changes immediately reflected in dashboard without manual rebuild.
+
+---
+
+#### **Version Updates**
+
+**Files Updated**:
+- `js/config.js` (line 7): VERSION = '2.3.13'
+- `admin.html` (line 49): Display version (v2.3.13)
+- `occasion.html` (lines 1183-1192): Cache-busting version parameters
+
+---
+
+#### **Testing Instructions**
+
+1. **Hard refresh admin dashboard** (Ctrl+Shift+R)
+2. **Click "Rebuild Index"** button once to regenerate with correct structure
+3. **Verify dashboard displays**:
+   - ✅ Correct dates
+   - ✅ Session types (not "Unknown")
+   - ✅ Closet worker names (not "N/A")
+   - ✅ Pull-tab worker names (NEW - now visible)
+   - ✅ Player counts (not 0)
+   - ✅ Profit values (not $0)
+   - ✅ Offage values with color coding (NEW)
+4. **Test Edit function**:
+   - Click Edit on any occasion
+   - Verify progressive data loads (jackpot, balls, consolation)
+   - Change status to "submitted"
+   - Verify index rebuilds automatically (no manual button click needed)
+5. **Test hamburger menu**:
+   - Open occasion.html
+   - Click hamburger menu
+   - Verify Admin Dashboard link goes to v2 (not v1)
+
+---
 
 ## Recent Changes (2025-10-10)
 

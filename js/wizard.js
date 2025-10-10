@@ -2949,8 +2949,8 @@ async function checkAndLoadOccasionFromUrl() {
                 console.warn('Could not save to localStorage:', e);
             }
 
-            // Load data into all form fields
-            loadAllStepData();
+            // Load data into all form fields using loadOccasionData (handles progressive data)
+            loadOccasionData(occasionData);
 
             // Show notification
             if (window.showNotification) {
