@@ -231,7 +231,7 @@
                         <img id="qr-image" src="" alt="QR Code" style="width: 150px; height: 150px; display: none;">
                     </div>
                     <div class="url-display" id="occasion-url">
-                        https://wewg24.github.io/rlc-bingo-manager/occasion.html
+                        https://wewg24.github.io/rlc-bingo-manager-v2/occasion.html
                     </div>
                 </div>
             </div>
@@ -253,7 +253,7 @@
                         <img id="admin-qr-image" src="" alt="Admin QR Code" style="width: 150px; height: 150px; display: none;">
                     </div>
                     <div class="url-display" id="admin-url">
-                        https://wewg24.github.io/rlc-bingo-manager/admin.html
+                        https://wewg24.github.io/rlc-bingo-manager-v2/admin.html
                     </div>
                 </div>
             </div>
@@ -264,7 +264,7 @@
     // Generate QR codes for both occasion entry and admin
     function generateQRCodes() {
         // Generate Occasion Entry QR Code
-        const occasionUrl = 'https://wewg24.github.io/rlc-bingo-manager/occasion.html';
+        const occasionUrl = 'https://wewg24.github.io/rlc-bingo-manager-v2/occasion.html';
         const occasionQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(occasionUrl)}`;
 
         const occasionQrImage = document.getElementById('qr-image');
@@ -288,7 +288,7 @@
         }
 
         // Generate Admin Dashboard QR Code
-        const adminUrl = 'https://wewg24.github.io/rlc-bingo-manager/admin.html';
+        const adminUrl = 'https://wewg24.github.io/rlc-bingo-manager-v2/admin.html';
         const adminQrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(adminUrl)}`;
 
         const adminQrImage = document.getElementById('admin-qr-image');

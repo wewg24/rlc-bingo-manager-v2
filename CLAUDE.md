@@ -167,11 +167,29 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.15
+- **Frontend**: v2.3.16
 - **Backend**: v2.3.12 (no backend changes in this release)
 - **Status**: Production
 
 ## Recent Changes (2025-10-10)
+
+### v2.3.16 - Fix Landing Page URLs to Point to V2 Project
+
+#### Issue Fixed
+The landing page (index.html) QR codes and displayed URLs were pointing to the old v1 project (`rlc-bingo-manager`) instead of the current v2 project (`rlc-bingo-manager-v2`).
+
+#### Solution
+Updated all URLs from v1 to v2 paths:
+- Occasion URL: `https://wewg24.github.io/rlc-bingo-manager-v2/occasion.html`
+- Admin URL: `https://wewg24.github.io/rlc-bingo-manager-v2/admin.html`
+
+**Files Modified:**
+- **index.html** (lines 234, 256, 267, 291): Updated all URLs to v2 project paths
+
+**Impact:**
+- QR codes now point to correct v2 project pages
+- Displayed URLs show correct v2 project paths
+- Users scanning QR codes will access v2 application
 
 ### v2.3.15 - Post-Submission Redirect to Home Page
 
