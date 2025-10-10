@@ -165,11 +165,52 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.9
-- **Backend**: v2.3.8 (no changes)
+- **Frontend**: v2.3.10
+- **Backend**: v2.3.10
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-10)
+
+### v2.3.10 - Fix Admin Dashboard Display and Enhanced Submit Debugging
+
+#### Admin Dashboard Not Displaying Values
+
+**Issue:** Dashboard showed "Unknown", "N/A", $0 for all occasions despite correct data in saved files
+
+**Root Cause:**
+- Backend's `updateOccasionsIndex()` function was only saving basic occasion metadata
+- It saved `occasion` object but NOT `financial` object
+- Dashboard code tried to read `financial.totalSales` and `financial.totalNetProfit` from index
+- Since financial data wasn't in index, all values were undefined/0
+
+**Solution:**
+- Added `financial: occasionData.financial` to occasions-index.json in both legacy and year-folder sections
+- Now index includes all financial metrics needed for dashboard display
+
+**Files Modified:**
+- Code.js (lines 1267, 1301): Include financial data in occasions index
+
+**Impact:**
+- Dashboard will now display correct values for revenue, profit, and all financial metrics
+- No need to load individual occasion files just to show dashboard grid
+
+#### Enhanced Submit Occasion Debugging
+
+**Issue:** Submit Occasion not saving status field (status missing from JSON file, defaulting to 'draft' in index)
+
+**Debugging Added:**
+- Console logs at function entry, user confirmation, and throughout submission process
+- Logs will show exactly where submission process is failing or status being lost
+- Format: `🚀 submitOccasion() called`, `✅ User confirmed`, `📊 Recalculating`, `✅ Submitting occasion with status: submitted`
+
+**Files Modified:**
+- js/wizard.js (lines 2716-2723): Added submission debugging logs
+
+**Next Steps for User:**
+- Hard refresh (Ctrl+Shift+R) to load v2.3.10
+- Click "Submit Occasion"
+- Check console logs for detailed submission trace
+- Report logs to identify where status field is being lost
 
 ### v2.3.9 - Critical Bug Fixes for Financial Calculations and Data Saving
 
