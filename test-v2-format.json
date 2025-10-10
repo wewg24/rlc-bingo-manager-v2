@@ -1,0 +1,51 @@
+{
+  "action": "saveOccasion",
+  "date": "2025-10-11",
+  "data": {
+    "occasion": {
+      "date": "2025-10-11",
+      "sessionType": "7-3",
+      "lionInCharge": "Test User V2",
+      "totalPlayers": 75,
+      "birthdayBOGOs": 3,
+      "progressive": {
+        "jackpot": 1300,
+        "ballsNeeded": 19,
+        "ballsActual": 25,
+        "consolation": 250
+      }
+    },
+    "financial": {
+      "bingoElectronicSales": 900,
+      "bingoMiscellaneousSales": 50,
+      "bingoPaperSales": 2500,
+      "bingoSales": 3450,
+      "bingoPrizesPaid": 2800,
+      "bingoNetProfit": 650,
+      "bingoDeposit": 1650,
+      "bingoStartupCash": 1000,
+      "bingoNetDeposit": 650,
+      "bingoOverShort": 0,
+      "pullTabRegularSales": 3500,
+      "pullTabSpecialSales": 800,
+      "pullTabSales": 4300,
+      "pullTabRegularPrizesPaid": 2300,
+      "pullTabSpecialPrizesPaid": 550,
+      "pullTabPrizes": 2850,
+      "pullTabPrizesPaidByCheck": 0,
+      "pulltabNetProfit": 1450,
+      "pullTabNetDeposit": 1450,
+      "pullTabOverShort": 0,
+      "totalSales": 7750,
+      "totalPrizesPaid": 5650,
+      "totalPrizesPaidByCheck": 0,
+      "totalNetProfit": 2100,
+      "totalCurrencyDeposit": 2050,
+      "totalCoinDeposit": 50,
+      "totalCheckDeposit": 0,
+      "totalActualDeposit": 2100,
+      "totalNetDeposit": 2100,
+      "totalOverShort": 0
+    }
+  }
+}

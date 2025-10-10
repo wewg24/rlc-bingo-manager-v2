@@ -1,0 +1,22 @@
+{
+  "action": "saveOccasion",
+  "date": "2025-10-10",
+  "data": {
+    "occasion": {
+      "date": "2025-10-10",
+      "sessionType": "6-2",
+      "lionInCharge": "Test User V1",
+      "totalPlayers": 50,
+      "birthdays": 2
+    },
+    "progressive": {
+      "jackpot": 1200,
+      "ballsNeeded": 20,
+      "consolation": 200
+    },
+    "financial": {
+      "totalBingoSales": 1000,
+      "pullTabSales": 500
+    }
+  }
+}

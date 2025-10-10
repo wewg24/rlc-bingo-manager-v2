@@ -198,6 +198,12 @@ async function saveToBackend() {
         // Restore current step
         window.app.currentStep = originalStep;
 
+        // CRITICAL: Recalculate financial totals after all saves (to fix values overwritten by old calculateComprehensiveFinancials)
+        if (typeof calculateFinalTotals === 'function') {
+            console.log('📊 Recalculating financial totals before backend save...');
+            calculateFinalTotals();
+        }
+
         // Get occasion date for validation
         const occasionDate = document.getElementById('occasion-date')?.value;
 
@@ -218,23 +224,31 @@ async function saveToBackend() {
         let existingStatus = null;
 
         await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+
             window[callbackName] = function(response) {
                 if (response.exists && response.status) {
                     existingStatus = response.status;
                 }
+                // Clean up immediately after callback
                 delete window[callbackName];
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
                 resolve();
             };
 
-            const script = document.createElement('script');
             script.src = `${checkUrl}&callback=${callbackName}`;
             script.onerror = () => {
                 delete window[callbackName];
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
                 resolve(); // Continue even if check fails
             };
             document.head.appendChild(script);
 
-            // Cleanup after 5 seconds
+            // Failsafe cleanup after 10 seconds
             setTimeout(() => {
                 if (window[callbackName]) {
                     delete window[callbackName];
@@ -243,7 +257,7 @@ async function saveToBackend() {
                 if (script.parentNode) {
                     script.parentNode.removeChild(script);
                 }
-            }, 5000);
+            }, 10000);
         });
 
         // Warn if overwriting non-draft
@@ -1076,7 +1090,8 @@ function saveMoneyCount() {
     const pullTabData = window.app.data.moneyCount.pullTab || window.app.data.moneyCount.pulltab;
 
     ['100', '50', '20', '10', '5', '2', '1', 'coins'].forEach(denom => {
-        const value = parseFloat(document.getElementById(`pt-${denom}`)?.value) || 0;
+        // Fixed: Use 'pt-drawer-' prefix to match input IDs (was 'pt-' which caused all values to be 0)
+        const value = parseFloat(document.getElementById(`pt-drawer-${denom}`)?.value) || 0;
         pullTabData[denom] = value;
     });
 }
@@ -2714,6 +2729,12 @@ async function submitOccasion() {
     }
 
     try {
+        // CRITICAL: Recalculate financial totals before submission
+        if (typeof calculateFinalTotals === 'function') {
+            console.log('📊 Recalculating financial totals before submission...');
+            calculateFinalTotals();
+        }
+
         // Update status in app data first
         window.app.data.status = 'submitted';
         window.app.data.submittedAt = new Date().toISOString();

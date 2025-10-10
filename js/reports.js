@@ -431,11 +431,11 @@ function generateSessionGamesSection(appData) {
         <tr>
             <td class="text-center">${index + 1}</td>
             <td>${gameName}${isPTEvent ? ' <em>(Not included in Bingo total)</em>' : ''}</td>
-            <td class="text-right">${formatCurrency(game.prizePerWinner || game.payout || 0)}</td>
+            <td class="text-right">${formatCurrency(game.prize || 0)}</td>
             <td class="text-right">${game.winners || 0}</td>
+            <td class="text-right">${formatCurrency(game.prizePerWinner || 0)}</td>
             <td class="text-right">${formatCurrency(game.totalPayout || 0)}</td>
             <td class="text-center">${game.checkPayment ? '✓' : ''}</td>
-            <td class="text-center">${game.notPlayed ? 'Not Played' : ''}</td>
         </tr>
     `}).join('');
 
@@ -456,15 +456,15 @@ function generateSessionGamesSection(appData) {
                 <th>Game Name</th>
                 <th class="text-right">Prize</th>
                 <th class="text-right">Winners</th>
+                <th class="text-right">Per Winner</th>
                 <th class="text-right">Total</th>
                 <th class="text-center">Check</th>
-                <th class="text-center">Status</th>
             </tr>
             ${gameRows}
             <tr class="total-row">
-                <td colspan="4" class="text-right"><strong>Total Bingo Prizes:</strong></td>
+                <td colspan="5" class="text-right"><strong>Total Bingo Prizes:</strong></td>
                 <td class="text-right"><strong>${formatCurrency(totalPrizes)}</strong></td>
-                <td colspan="2"></td>
+                <td></td>
             </tr>
         </table>
     </div>

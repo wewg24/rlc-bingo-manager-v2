@@ -94,7 +94,13 @@ function doPost(e) {
     if (data.action === 'saveOccasion' || data.action === 'save' || data.action === 'save-occasion') {
       // For form data, the occasion data might be in the main object
       const occasionData = data.data ? data.data : data;
-      return handleSaveOccasionV2(occasionData);
+      // Also extract status fields if sent separately
+      const statusFields = {
+        status: data.status,
+        submittedAt: data.submittedAt,
+        submittedBy: data.submittedBy
+      };
+      return handleSaveOccasionV2(occasionData, statusFields);
     }
 
     if (data.action === 'loadOccasions') {
@@ -1081,9 +1087,10 @@ function createTestOccasion() {
 /**
  * Save occasion data using existing System folder structure
  */
-function handleSaveOccasionV2(occasionData) {
+function handleSaveOccasionV2(occasionData, statusFields) {
   try {
     console.log('handleSaveOccasionV2 called with:', occasionData);
+    console.log('Status fields parameter:', statusFields);
 
     // Ensure occasionData is an object
     if (typeof occasionData === 'string') {
@@ -1107,6 +1114,20 @@ function handleSaveOccasionV2(occasionData) {
     occasionData.id = occasionId;
     occasionData.created = occasionData.created || new Date().toISOString();
     occasionData.modified = new Date().toISOString();
+
+    // Explicitly add status fields if provided separately (fix for status field loss issue)
+    if (statusFields) {
+      if (statusFields.status) {
+        occasionData.status = statusFields.status;
+        console.log('✅ Explicitly set status from separate parameter:', statusFields.status);
+      }
+      if (statusFields.submittedAt) {
+        occasionData.submittedAt = statusFields.submittedAt;
+      }
+      if (statusFields.submittedBy) {
+        occasionData.submittedBy = statusFields.submittedBy;
+      }
+    }
 
     console.log('Processing occasion with ID:', occasionId);
     console.log('✅ Backend received status field:', occasionData.status || 'MISSING');
