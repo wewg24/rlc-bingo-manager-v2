@@ -167,11 +167,41 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.16
+- **Frontend**: v2.3.17
 - **Backend**: v2.3.12 (no backend changes in this release)
 - **Status**: Production
 
 ## Recent Changes (2025-10-10)
+
+### v2.3.17 - Fix Post-Submission Redirect from Admin Edit
+
+#### Issue Fixed
+When editing an occasion from the admin dashboard (with URL parameters like `?date=...&id=...`), after submission the page was reloading the same occasion in edit mode instead of redirecting to the home page.
+
+#### Root Cause
+- Using `window.location.href = 'index.html'` created a relative redirect
+- Browser history retained the URL parameters
+- localStorage and window.app.data still had the occasion ID
+- This could cause the page to reload the occasion after redirect
+
+#### Solution
+Enhanced the post-submission redirect to ensure clean navigation:
+1. Clear the occasion ID from `window.app.data`
+2. Use `window.location.replace()` instead of `window.location.href`
+3. Build absolute URL to ensure parameters are stripped
+4. `replace()` removes current page from browser history (prevents back button issues)
+
+**Files Modified:**
+- **js/wizard.js** (lines 2792-2800): Enhanced redirect with data cleanup and absolute URL
+- **js/config.js**: Updated VERSION to '2.3.17'
+- **admin.html**: Updated version in header and script tags
+- **occasion.html**: Updated version in script tags
+
+**Impact:**
+- After submitting an occasion edited from admin, user is redirected to home page
+- Occasion is not reloaded in edit mode
+- Browser back button won't return to the submitted occasion
+- Clean navigation flow regardless of how occasion entry was accessed
 
 ### v2.3.16 - Fix Landing Page URLs to Point to V2 Project
 

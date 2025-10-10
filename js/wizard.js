@@ -2789,8 +2789,15 @@ async function submitOccasion() {
             // Clear draft data
             localStorage.removeItem(CONFIG.STORAGE_KEYS.DRAFT_DATA);
 
+            // Clear any saved occasion ID to prevent reload
+            if (window.app && window.app.data) {
+                delete window.app.data.id;
+            }
+
             // Redirect to home page after successful submission
-            window.location.href = 'index.html';
+            // Use replace() to remove from history and ensure clean navigation
+            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            window.location.replace(baseUrl + '/index.html');
         } else {
             // Re-enable button on error
             if (submitBtn) {
