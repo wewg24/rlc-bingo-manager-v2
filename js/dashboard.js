@@ -115,9 +115,22 @@ class Dashboard {
      * Reads directly from backend index structure (no transformation)
      */
     renderOccasionRowInline(occasion) {
+        // DIAGNOSTIC LOGGING - See what we're actually receiving
+        console.group('🔍 Dashboard Row Data for occasion:', occasion.id);
+        console.log('Full occasion object:', occasion);
+        console.log('occasion.date:', occasion.date);
+        console.log('occasion.session:', occasion.session);
+        console.log('occasion.occasion:', occasion.occasion);
+        console.log('occasion.financial:', occasion.financial);
+        console.log('occasion.status:', occasion.status);
+        console.groupEnd();
+
         // Backend index stores: {id, date, session, occasion: {...}, financial: {...}, status}
         const occasionData = occasion.occasion || {};
         const financial = occasion.financial || {};
+
+        console.log('🔍 Extracted occasionData:', occasionData);
+        console.log('🔍 Extracted financial:', financial);
 
         // Date
         const formattedDate = new Date(occasion.date).toLocaleDateString();
@@ -143,6 +156,17 @@ class Dashboard {
 
         // Status
         const status = occasion.status || 'draft';
+
+        console.log('🔍 Rendered values:', {
+            date: formattedDate,
+            session: sessionTypeName,
+            closet: closetWorker,
+            pullTabs: pullTabWorker,
+            players,
+            profit,
+            offage,
+            status
+        });
 
         return `
             <tr>
