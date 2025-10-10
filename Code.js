@@ -1263,7 +1263,8 @@ function updateOccasionsIndex() {
             created: occasionData.created,
             modified: occasionData.modified,
             totals: occasionData.totals,
-            occasion: occasionData.occasion
+            occasion: occasionData.occasion,
+            financial: occasionData.financial  // Include financial data for dashboard display
           });
         } catch (e) {
           console.error('Error parsing occasion file:', fileName, e);
@@ -1297,7 +1298,8 @@ function updateOccasionsIndex() {
               created: occasionData.created,
               modified: occasionData.modified,
               totals: occasionData.totals,
-              occasion: occasionData.occasion
+              occasion: occasionData.occasion,
+              financial: occasionData.financial  // Include financial data for dashboard display
             });
           } catch (e) {
             console.error('Error parsing occasion file:', fileName, e);

@@ -2713,9 +2713,14 @@ function updatePerformanceMetrics(players, sales, profit) {
 // ============================================
 
 async function submitOccasion() {
+    console.log('🚀 submitOccasion() called - starting submission process');
+
     if (!confirm('Submit this occasion? This will save all data to the database.')) {
+        console.log('❌ User cancelled submission');
         return;
     }
+
+    console.log('✅ User confirmed submission - proceeding');
 
     // Show loading overlay and disable button to prevent multiple clicks
     if (window.showLoading) {
