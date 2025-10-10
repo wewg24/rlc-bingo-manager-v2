@@ -113,6 +113,14 @@ class ApiService {
                     occasion['lionInCharge']
                 ) || 'N/A';
 
+                // Get pull-tab worker (Lion in Charge of Pull-Tabs)
+                const lionPullTabs = this.adminInterface.cleanString(
+                    occasionData.lionPullTabs ||  // Nested structure
+                    occasion.lionPullTabs ||
+                    occasion['Lion Pull-Tabs'] ||
+                    occasion['lionPullTabs']
+                ) || 'N/A';
+
                 // Get date with robust property access
                 const dateValue = occasion.date || occasion['Date'] || occasion['date'];
                 const validatedDate = this.adminInterface.validateDate(dateValue) || new Date().toISOString().split('T')[0];
@@ -136,15 +144,18 @@ class ApiService {
                 const financial = occasion.financial || {};
                 const totalRevenue = financial.totalSales || financial.grossSales || 0;
                 const netProfit = financial.totalNetProfit || financial.idealProfit || 0;
+                const totalOverShort = financial.totalOverShort || 0;
 
                 return {
                     id: occasionId,
                     date: validatedDate,
                     sessionType: sessionTypeKey,
                     lionInCharge: lionInCharge,
+                    lionPullTabs: lionPullTabs,  // Add pull-tab worker
                     totalPlayers: totalPlayers,
                     totalRevenue: totalRevenue,
                     netProfit: netProfit,
+                    totalOverShort: totalOverShort,  // Add over/short
                     status: statusValue,
                     // Store additional fields for reference
                     progressive: {

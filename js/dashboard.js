@@ -112,61 +112,36 @@ class Dashboard {
 
     /**
      * Render an occasion row (inline version for dashboard)
-     * Reads directly from backend index structure (no transformation)
+     * Reads from TRANSFORMED data structure (api-service.js flattens the data)
      */
     renderOccasionRowInline(occasion) {
-        // DIAGNOSTIC LOGGING - See what we're actually receiving
-        console.group('🔍 Dashboard Row Data for occasion:', occasion.id);
-        console.log('Full occasion object:', occasion);
-        console.log('occasion.date:', occasion.date);
-        console.log('occasion.session:', occasion.session);
-        console.log('occasion.occasion:', occasion.occasion);
-        console.log('occasion.financial:', occasion.financial);
-        console.log('occasion.status:', occasion.status);
-        console.groupEnd();
-
-        // Backend index stores: {id, date, session, occasion: {...}, financial: {...}, status}
-        const occasionData = occasion.occasion || {};
-        const financial = occasion.financial || {};
-
-        console.log('🔍 Extracted occasionData:', occasionData);
-        console.log('🔍 Extracted financial:', financial);
+        // api-service.js transforms backend data to flat structure:
+        // {id, date, sessionType, lionInCharge, lionPullTabs, totalPlayers, netProfit, totalOverShort, status}
 
         // Date
         const formattedDate = new Date(occasion.date).toLocaleDateString();
 
         // Session (convert code to name)
-        const sessionType = occasion.session || 'Unknown';
+        const sessionType = occasion.sessionType || 'Unknown';
         const sessionTypeName = CONFIG.SESSION_TYPES?.[sessionType] || sessionType;
 
-        // Closet (Lion in Charge)
-        const closetWorker = occasionData.lionInCharge || 'N/A';
+        // Closet (Lion in Charge) - direct field
+        const closetWorker = occasion.lionInCharge || 'N/A';
 
-        // Pull-Tabs (Lion in Charge of Pull-Tabs)
-        const pullTabWorker = occasionData.lionPullTabs || 'N/A';
+        // Pull-Tabs (Lion in Charge of Pull-Tabs) - direct field
+        const pullTabWorker = occasion.lionPullTabs || 'N/A';
 
-        // Players
-        const players = occasionData.totalPlayers || 0;
+        // Players - direct field
+        const players = occasion.totalPlayers || 0;
 
-        // Profit (Net Profit)
-        const profit = financial.totalNetProfit || 0;
+        // Profit (Net Profit) - direct field
+        const profit = occasion.netProfit || 0;
 
-        // Offage (Over/Short)
-        const offage = financial.totalOverShort || 0;
+        // Offage (Over/Short) - direct field
+        const offage = occasion.totalOverShort || 0;
 
-        // Status
+        // Status - direct field
         const status = occasion.status || 'draft';
-
-        console.log('🔍 Rendered values:', {
-            date: formattedDate,
-            session: sessionTypeName,
-            closet: closetWorker,
-            pullTabs: pullTabWorker,
-            players,
-            profit,
-            offage,
-            status
-        });
 
         return `
             <tr>
