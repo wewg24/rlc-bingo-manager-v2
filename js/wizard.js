@@ -2724,6 +2724,9 @@ async function submitOccasion() {
             ...window.app.data
         };
 
+        console.log('✅ Submitting occasion with status:', submissionData.status);
+        console.log('📤 Full submission data includes status field:', 'status' in submissionData);
+
         // Submit to backend
         const response = await fetch(CONFIG.API_URL, {
             method: 'POST',

@@ -1109,6 +1109,8 @@ function handleSaveOccasionV2(occasionData) {
     occasionData.modified = new Date().toISOString();
 
     console.log('Processing occasion with ID:', occasionId);
+    console.log('✅ Backend received status field:', occasionData.status || 'MISSING');
+    console.log('📥 Backend received root-level fields:', Object.keys(occasionData).filter(k => !k.startsWith('_')));
 
     // Create individual occasion file in year folder
     const occasionFileName = occasionId + '.json';
