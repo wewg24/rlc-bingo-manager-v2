@@ -1162,7 +1162,8 @@ function handleSaveOccasionV2(occasionData, statusFields) {
         message: 'Occasion saved successfully with subfolder structure',
         id: occasionId,
         fileName: occasionFileName,
-        location: 'System/occasions/' + currentYear + '/' + occasionFileName
+        location: 'System/occasions/' + currentYear + '/' + occasionFileName,
+        data: occasionData  // Return complete saved data including status field
       }))
       .setMimeType(ContentService.MimeType.JSON);
 

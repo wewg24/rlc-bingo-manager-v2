@@ -2777,6 +2777,13 @@ async function submitOccasion() {
         }
 
         if (result.success) {
+            // Verify status was saved
+            if (result.data && result.data.status === 'submitted') {
+                console.log('✅ Status verified as submitted in backend response');
+            } else {
+                console.warn('⚠️ Status not confirmed in backend response:', result.data?.status);
+            }
+
             alert('Occasion submitted successfully!');
 
             // Clear draft data
@@ -2852,6 +2859,166 @@ function showValidationError(message) {
 }
 
 // ============================================
+// URL PARAMETER HANDLING FOR EDITING
+// ============================================
+
+/**
+ * Check URL for date and id parameters, and load occasion if present
+ * This enables editing occasions from the admin dashboard
+ */
+async function checkAndLoadOccasionFromUrl() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const occasionId = urlParams.get('id');
+        const occasionDate = urlParams.get('date');
+
+        if (!occasionId && !occasionDate) {
+            console.log('No URL parameters found - starting fresh occasion');
+            return;
+        }
+
+        console.log('📥 URL parameters detected:', { id: occasionId, date: occasionDate });
+
+        if (!occasionId) {
+            console.warn('Date provided but no ID - cannot load occasion');
+            return;
+        }
+
+        // Show loading
+        if (window.showLoading) {
+            window.showLoading('Loading Occasion', 'Loading occasion data from server...');
+        }
+
+        // Load occasion from backend via JSONP
+        const callbackName = 'loadOccasionFromUrlCallback_' + Date.now();
+        let occasionData = null;
+
+        await new Promise((resolve, reject) => {
+            window[callbackName] = function(response) {
+                if (response.success && response.data) {
+                    occasionData = response.data;
+                    console.log('✅ Loaded occasion data:', occasionData);
+                } else {
+                    console.error('Failed to load occasion:', response.error || response.message);
+                }
+                delete window[callbackName];
+                resolve();
+            };
+
+            const script = document.createElement('script');
+            script.src = `${CONFIG.API_URL}?action=loadOccasion&id=${occasionId}&callback=${callbackName}`;
+            script.onerror = () => {
+                delete window[callbackName];
+                reject(new Error('Failed to load occasion'));
+            };
+            document.head.appendChild(script);
+
+            setTimeout(() => {
+                if (window[callbackName]) {
+                    delete window[callbackName];
+                    reject(new Error('Timeout loading occasion'));
+                }
+                if (script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+            }, 15000);
+        });
+
+        if (!occasionData) {
+            throw new Error('No occasion data loaded from server');
+        }
+
+        // Check if occasion is finalized (read-only)
+        const status = occasionData.status || 'draft';
+        if (status === 'finalized') {
+            alert('⚠️ This occasion is finalized and cannot be edited.\n\nYou can view the data but cannot make changes.');
+            // Continue loading but we'll disable form fields later
+        }
+
+        // Populate window.app.data with loaded occasion
+        if (window.app && window.app.data) {
+            // Merge loaded data into app.data
+            Object.assign(window.app.data, occasionData);
+            console.log('✅ Occasion data loaded into window.app.data');
+
+            // Save to localStorage so it persists across tab switches
+            try {
+                localStorage.setItem(CONFIG.STORAGE_KEYS.DRAFT_DATA, JSON.stringify(occasionData));
+                console.log('✅ Occasion data saved to localStorage');
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+
+            // Load data into all form fields
+            loadAllStepData();
+
+            // Show notification
+            if (window.showNotification) {
+                window.showNotification(
+                    `📂 Loaded occasion from ${occasionDate} (${status})`,
+                    'success'
+                );
+            } else {
+                alert(`📂 Loaded occasion from ${occasionDate}\nStatus: ${status}`);
+            }
+
+            // If finalized, disable all form inputs
+            if (status === 'finalized') {
+                disableAllFormInputs();
+            }
+        }
+
+    } catch (error) {
+        console.error('Error loading occasion from URL:', error);
+        alert(`❌ Failed to load occasion: ${error.message}\n\nYou can still create a new occasion.`);
+    } finally {
+        if (window.hideLoading) {
+            window.hideLoading();
+        }
+    }
+}
+
+/**
+ * Load data into all form fields across all tabs
+ */
+function loadAllStepData() {
+    console.log('Loading data into all form fields...');
+    const originalStep = window.app.currentStep;
+
+    // Load data for each step
+    for (let step = 1; step <= 6; step++) {
+        window.app.currentStep = step;
+        loadStepData();
+    }
+
+    // Restore original step
+    window.app.currentStep = originalStep;
+    updateStepDisplay();
+
+    console.log('✅ All form fields loaded');
+}
+
+/**
+ * Disable all form inputs for finalized occasions
+ */
+function disableAllFormInputs() {
+    console.log('Disabling all form inputs (finalized occasion)');
+
+    document.querySelectorAll('input, select, textarea, button').forEach(el => {
+        // Don't disable tab navigation buttons
+        if (!el.classList.contains('tab-button') && !el.classList.contains('step')) {
+            el.disabled = true;
+        }
+    });
+
+    // Add visual indicator
+    const header = document.querySelector('h1');
+    if (header) {
+        header.innerHTML += ' <span style="color: #f44336; font-size: 0.8em;">[READ-ONLY - FINALIZED]</span>';
+    }
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
@@ -2891,6 +3058,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof loadPullTabLibrary === 'function') {
         loadPullTabLibrary();
     }
+
+    // Check for URL parameters to load existing occasion for editing
+    checkAndLoadOccasionFromUrl();
 
     console.log('Wizard.js initialization complete');
 });

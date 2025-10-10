@@ -12,10 +12,10 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA/exec
+- **Web App URL**: https://script.google.com/macros/s/AKfycbx3A7363PHe2GhHxbTW-R_D1BjP-Skt7-znnjkpO1qV7gYrT2OePNwvWMdgVVkHQ1OPtA/exec
 - **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
-- **Deployment**: Version 8 (Web App - 2025-10-10 1:45 PM)
-- **Deployment ID**: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
+- **Deployment**: Version 10 (Web App - 2025-10-10)
+- **Deployment ID**: `AKfycbx3A7363PHe2GhHxbTW-R_D1BjP-Skt7-znnjkpO1qV7gYrT2OePNwvWMdgVVkHQ1OPtA`
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
 - **Timezone**: America/Chicago
@@ -166,9 +166,75 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.11
-- **Backend**: v2.3.11
+- **Frontend**: v2.3.12
+- **Backend**: v2.3.12
 - **Status**: Production
+
+## Recent Changes (2025-10-10)
+
+### v2.3.12 - Critical Bug Fixes for Dashboard Display, Status Preservation, and Edit Function
+
+#### Three Major Issues Resolved
+
+**1. Dashboard Table Display Fixed (User Action Required)**
+
+**Issue:** Dashboard Occasions Management table showing incorrect values (Unknown, N/A, $0) while View dialog displayed correct data.
+
+**Root Cause:** Index file hasn't been rebuilt since v2.3.11 backend deployment. Backend correctly includes financial data in index (Code.js:1267, 1302), but existing index file predates this fix.
+
+**Solution:** User must click **"🔄 Rebuild Index"** button in Occasions Management section to regenerate index with financial data.
+
+**Files Modified:** None (feature already exists from v2.3.11)
+
+**2. Status Field Preservation on Submission**
+
+**Issue:** Status field not being confirmed when submitting occasions. Frontend sends status='submitted' but had no verification it was actually saved.
+
+**Root Cause:** Backend saved status correctly but didn't return the complete saved occasion data (including status) for frontend verification.
+
+**Solution:**
+- **Backend (Code.js:1166)**: Now returns complete saved occasion data including status field
+- **Frontend (wizard.js:2780-2785)**: Verifies status field in backend response and logs warning if not confirmed
+
+**Impact:** Frontend can now verify status was preserved, with console warnings if backend doesn't return expected status.
+
+**3. Edit Occasion Function Now Works**
+
+**Issue:** Edit button in admin dashboard didn't load occasion data when redirecting to occasion.html. URL parameters (`?date=...&id=...`) were passed but ignored.
+
+**Root Cause:** **NO CODE EXISTED** to handle URL parameters and load occasion data for editing.
+
+**Solution:** Added comprehensive URL parameter handling system (wizard.js:2861-3019):
+
+**New Functions:**
+- `checkAndLoadOccasionFromUrl()` - Detects URL parameters, loads occasion from backend via JSONP
+- `loadAllStepData()` - Populates all form fields across all tabs with loaded data
+- `disableAllFormInputs()` - Makes finalized occasions read-only with visual indicator
+
+**Features:**
+- Automatically detects `?date=...&id=...` in URL on page load
+- Loads full occasion data from backend using occasion ID
+- Populates all form fields across all 6 tabs
+- Shows loading spinner during load
+- Displays success notification with date and status
+- **Read-only mode** for finalized occasions (disables all inputs, adds visual warning)
+- Saves loaded data to localStorage for persistence across tab switches
+- Graceful error handling with user-friendly messages
+
+**Files Modified:**
+- **Code.js** (line 1166): Return complete occasion data including status
+- **wizard.js** (lines 2780-2785): Verify status in response
+- **wizard.js** (lines 2861-3019): Add URL parameter handling system
+- **js/config.js** (line 7): Bump version to 2.3.12
+- **admin.html** (line 49): Update version display to v2.3.12
+
+**Impact:** Users can now edit draft occasions from admin dashboard by clicking Edit button. The occasion loads fully into the editor with all data preserved.
+
+**Next Steps for User:**
+1. Click "🔄 Rebuild Index" button to fix dashboard display
+2. Deploy backend changes: `clasp push` then create new Web App deployment
+3. Deploy frontend changes: `git add`, `git commit`, `git push` to GitHub
+4. Test Edit function by clicking Edit on any draft occasion
 
 ## Recent Changes (2025-10-10)
 
