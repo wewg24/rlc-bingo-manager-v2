@@ -40,11 +40,17 @@ class Dashboard {
         const dashboardHtml = `
             <div class="dashboard-container">
                 <div class="card">
-                    <div style="margin-bottom: 30px;">
-                        <h2 style="margin-bottom: 10px;">📋 Occasions Management</h2>
-                        <p style="color: #666;">
-                            Review and manage bingo occasions. All occasions are categorized by status below.
-                        </p>
+                    <div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h2 style="margin-bottom: 10px;">📋 Occasions Management</h2>
+                            <p style="color: #666; margin: 0;">
+                                Review and manage bingo occasions. All occasions are categorized by status below.
+                            </p>
+                        </div>
+                        <button class="btn secondary" onclick="window.adminInterface.dashboard.rebuildIndex()"
+                                style="white-space: nowrap;">
+                            🔄 Rebuild Index
+                        </button>
                     </div>
 
                     ${this.renderReviewSection('🔵 Draft Occasions', draftOccasions, 'draft')}
@@ -138,6 +144,88 @@ class Dashboard {
         `;
     }
 
+
+    /**
+     * Rebuild the occasions index file
+     */
+    async rebuildIndex() {
+        console.log('Dashboard: rebuildIndex called');
+
+        if (!confirm('Rebuild the occasions index file?\n\nThis will scan all occasion files and regenerate the index with updated financial data.')) {
+            return;
+        }
+
+        // Show loading spinner
+        if (window.showLoading) {
+            window.showLoading({
+                text: 'Rebuilding Index',
+                subtext: 'Scanning all occasion files and updating index...',
+                timeout: 30000
+            });
+        }
+
+        try {
+            // Call the backend API to rebuild index
+            const result = await new Promise((resolve, reject) => {
+                const callbackName = 'rebuildIndexCallback_' + Date.now();
+
+                window[callbackName] = function(response) {
+                    delete window[callbackName];
+                    resolve(response);
+                };
+
+                const script = document.createElement('script');
+                script.src = `${CONFIG.API_URL}?action=updateOccasionsIndex&callback=${callbackName}&t=${Date.now()}`;
+                script.onerror = () => {
+                    delete window[callbackName];
+                    reject(new Error('Failed to rebuild index'));
+                };
+                document.head.appendChild(script);
+
+                setTimeout(() => {
+                    if (window[callbackName]) {
+                        delete window[callbackName];
+                        reject(new Error('Timeout rebuilding index'));
+                    }
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                }, 30000);
+            });
+
+            console.log('Rebuild index result:', result);
+
+            if (result.success) {
+                if (this.adminInterface.utilities) {
+                    this.adminInterface.utilities.showAlert(
+                        `✅ Index rebuilt successfully!\n\n${result.count} occasions indexed.\n\nLast updated: ${new Date(result.lastUpdated).toLocaleString()}`,
+                        'success'
+                    );
+                } else {
+                    alert(`✅ Index rebuilt successfully!\n\n${result.count} occasions indexed.`);
+                }
+
+                // Reload the dashboard to show updated data
+                if (this.adminInterface.apiService) {
+                    await this.adminInterface.apiService.loadRealData();
+                }
+            } else {
+                throw new Error(result.error || 'Rebuild failed');
+            }
+        } catch (error) {
+            console.error('Error rebuilding index:', error);
+            if (this.adminInterface.utilities) {
+                this.adminInterface.utilities.showAlert(`Failed to rebuild index: ${error.message}`, 'error');
+            } else {
+                alert(`❌ Failed to rebuild index: ${error.message}`);
+            }
+        } finally {
+            // Hide loading spinner
+            if (window.hideLoading) {
+                window.hideLoading();
+            }
+        }
+    }
 
     /**
      * Add custom CSS for dashboard components
