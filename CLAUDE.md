@@ -165,11 +165,59 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.3
-- **Backend**: v2.0.0 (no changes needed)
+- **Frontend**: v2.3.8
+- **Backend**: v2.3.8
 - **Status**: Ready for Testing
 
 ## Recent Changes (2025-10-09)
+
+### v2.3.8 - Fix Status Field Preservation in Submission
+
+#### Critical Bug Fix
+Fixed bug where status field was not being saved to individual occasion JSON files, causing submitted occasions to appear as 'draft' in occasions-index.json and dashboard.
+
+**Root Cause:**
+- Status field was set in frontend (`window.app.data.status = 'submitted'`) and included in JSON data
+- However, the field was being lost during transmission or backend processing
+- Backend's `updateOccasionsIndex()` reads `occasionData.status || 'draft'`, so missing field defaulted to 'draft'
+
+**Solution:**
+- **Frontend (wizard.js:2739-2742)**: Send status, submittedAt, and submittedBy as separate POST parameters in addition to including them in the JSON data object
+- **Backend (Code.js:98-102)**: Extract separate status fields from POST parameters
+- **Backend (Code.js:1118-1130)**: Explicitly add status fields to occasionData before saving to ensure they're preserved in the JSON file
+
+**Files Modified:**
+- **js/wizard.js** (lines 2729, 2739-2742): Added Object.keys debug log, send status fields as separate parameters
+- **Code.js** (lines 98-103, 1090, 1093, 1118-1130): Accept and explicitly apply status fields parameter
+
+**Impact:**
+- Submitted occasions now correctly show `status: 'submitted'` in both individual JSON files and occasions-index.json
+- Dashboard properly displays submission status (Draft/Submitted/Finalized)
+- Status workflow (draft → submitted → finalized) now functions correctly
+
+### v2.3.7 - Add Debugging Logs for Status Field Investigation
+
+#### Diagnostic Logging
+Added comprehensive debug logging to trace status field through submission process (deployed but user cache prevented testing).
+
+**Frontend Logs (wizard.js:2727-2729)**:
+- Log status value before submission
+- Log whether status field exists in submissionData
+- Log all root-level keys in submissionData
+
+**Backend Logs (Code.js:1112-1113)**:
+- Log status field value or 'MISSING' if not present
+- Log all root-level fields in received occasionData
+
+### v2.3.6 - Dashboard Display and Money Count Fixes
+
+#### Bug Fixes
+1. **Fixed nav-occasions addEventListener error** - Removed reference to deleted Occasions tab
+2. **Fixed dashboard data display** - Modified api-service.js to read from nested `occasion.occasion.*` structure
+3. **Fixed Money Count calculations** - Added `calculateFinalTotals()` call in `loadMoneyCount()`
+4. **Fixed Submit status** - Updated `submitOccasion()` to set status before creating submission data
+5. **Added version labels** - Added (v2.3.6) to both admin and occasion page headers
+6. **Changed title** - "Mobile Occasion Entry" → "Occasion Entry"
 
 ### v2.3.3 - Complete Admin CRUD Implementation
 
