@@ -2789,8 +2789,8 @@ async function submitOccasion() {
             // Clear draft data
             localStorage.removeItem(CONFIG.STORAGE_KEYS.DRAFT_DATA);
 
-            // Reset form
-            window.location.reload();
+            // Redirect to home page after successful submission
+            window.location.href = 'index.html';
         } else {
             // Re-enable button on error
             if (submitBtn) {

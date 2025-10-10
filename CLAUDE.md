@@ -167,9 +167,30 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.13
+- **Frontend**: v2.3.15
 - **Backend**: v2.3.12 (no backend changes in this release)
 - **Status**: Production
+
+## Recent Changes (2025-10-10)
+
+### v2.3.15 - Post-Submission Redirect to Home Page
+
+#### Issue Fixed
+After submitting an occasion, the page was reloading the same edit screen instead of redirecting to the home page. This was problematic when users navigated to the occasion entry screen from the admin dashboard via the Edit button (e.g., `occasion.html?date=2025-07-14&id=OCC_1760032241928`), as the URL parameters would persist and reload the edit screen.
+
+#### Solution
+Changed post-submission behavior to redirect to `index.html` (home page) instead of reloading the current page.
+
+**Files Modified:**
+- **js/wizard.js** (line 2793): Changed `window.location.reload()` to `window.location.href = 'index.html'`
+- **js/config.js** (line 7): Updated VERSION to '2.3.15'
+- **admin.html** (lines 49, 130-139): Updated version to v2.3.15 in header and script tags
+- **occasion.html** (lines 1183-1192): Updated version to v2.3.15 in script tags
+
+**Impact:**
+- Users are now redirected to the home page after successful submission
+- Clean user experience regardless of how they accessed the occasion entry screen
+- No more stuck in edit mode after submission
 
 ## Recent Changes (2025-10-10)
 
