@@ -4,7 +4,7 @@
 window.CONFIG = {
     API_URL: 'https://script.google.com/macros/s/AKfycbzHKX_QV5wrRBkGRPyHr4Bm06jErp-ilNQ55R5etIuOkQuA4aQKRwD8e-Q8AE3dM2wC9Q/exec',
     APP_NAME: 'RLC Bingo Manager V2',
-    VERSION: '2.3.19',
+    VERSION: '2.3.20',
 
     // Startup cash for bingo drawer
     BINGO_STARTUP_CASH: 1000,

@@ -39,7 +39,6 @@ class UIComponents {
                                 <th>Count</th>
                                 <th>Ideal Profit</th>
                                 <th>Profit %</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -71,13 +70,6 @@ class UIComponents {
                 <td>${count.toLocaleString()}</td>
                 <td>$${idealProfit.toFixed(2)}</td>
                 <td>${profitPercentage}%</td>
-                <td>
-                    <select class="form-control status-select" data-game-name="${game.name}" onchange="window.adminInterface.uiComponents.updatePullTabStatus(this)">
-                        <option value="active" ${game.status === 'active' ? 'selected' : ''}>Active</option>
-                        <option value="discontinued" ${game.status === 'discontinued' ? 'selected' : ''}>Discontinued</option>
-                        <option value="seasonal" ${game.status === 'seasonal' ? 'selected' : ''}>Seasonal</option>
-                    </select>
-                </td>
                 <td>
                     <div class="btn-group">
                         ${game.url ? `<button class="btn btn-sm secondary" onclick="window.open('${game.url}', '_blank')" title="View Details PDF">ℹ️</button>` : `<button class="btn btn-sm secondary" disabled title="No details available" style="opacity: 0.3; cursor: not-allowed;">ℹ️</button>`}
