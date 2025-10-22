@@ -14,10 +14,17 @@ class UIComponents {
         const libraryView = document.getElementById('library-view');
         if (!libraryView || !games || !Array.isArray(games)) return;
 
+        // Sort games alphabetically by name
+        const sortedGames = [...games].sort((a, b) => {
+            const nameA = (a.name || '').toLowerCase();
+            const nameB = (b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+
         const tableHtml = `
             <div class="card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3>Pull-Tab Library (${games.length} Games)</h3>
+                    <h3>Pull-Tab Library (${sortedGames.length} Games)</h3>
                     <div class="d-flex gap-2">
                         <input type="text" id="pull-tab-search" placeholder="Search games..." class="form-control" style="width: 200px;">
                         <button class="btn success" onclick="window.adminInterface.uiComponents.showAddPullTabModal()">Add New Game</button>
@@ -37,7 +44,7 @@ class UIComponents {
                             </tr>
                         </thead>
                         <tbody>
-                            ${games.map(game => this.renderPullTabRow(game)).join('')}
+                            ${sortedGames.map(game => this.renderPullTabRow(game)).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -59,10 +66,7 @@ class UIComponents {
 
         return `
             <tr data-game-name="${game.name || ''}">
-                <td>
-                    <strong>${game.name || 'Unknown'}</strong>
-                    ${game.url ? `<br><a href="${game.url}" target="_blank" class="text-small">📄 View Details</a>` : ''}
-                </td>
+                <td><strong>${game.name || 'Unknown'}</strong></td>
                 <td>$${price.toFixed(2)}</td>
                 <td>${count.toLocaleString()}</td>
                 <td>$${idealProfit.toFixed(2)}</td>
@@ -76,6 +80,7 @@ class UIComponents {
                 </td>
                 <td>
                     <div class="btn-group">
+                        ${game.url ? `<button class="btn btn-sm secondary" onclick="window.open('${game.url}', '_blank')" title="View Details PDF">ℹ️</button>` : `<button class="btn btn-sm secondary" disabled title="No details available" style="opacity: 0.3; cursor: not-allowed;">ℹ️</button>`}
                         <button class="btn btn-sm" onclick="window.adminInterface.uiComponents.viewPullTabDetails('${game.name}')">View</button>
                         <button class="btn btn-sm warning" onclick="window.adminInterface.uiComponents.editPullTab('${game.name}')">Edit</button>
                         <button class="btn btn-sm danger" onclick="window.adminInterface.uiComponents.deletePullTab('${game.name}')">Delete</button>

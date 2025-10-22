@@ -1246,12 +1246,6 @@ window.calculatePaperSold = calculatePaperSold;
 async function loadGameResults() {
     const gamesBody = document.getElementById('games-body');
 
-    // Check if games are already loaded - don't reload unnecessarily
-    if (gamesBody && gamesBody.children.length > 0 && !gamesBody.textContent.includes('Loading')) {
-        console.log('Session games already loaded, skipping reload');
-        return;
-    }
-
     // Get the selected session type from step 1
     const sessionType = document.getElementById('session-type')?.value;
 
@@ -2802,9 +2796,13 @@ async function submitOccasion() {
         window.app.data.submittedAt = new Date().toISOString();
         window.app.data.submittedBy = window.app.data.occasion?.lionInCharge || 'Unknown';
 
-        // Prepare submission data
+        // Prepare submission data - explicitly ensure status fields are included
         const submissionData = {
-            ...window.app.data
+            ...window.app.data,
+            // Explicitly set status fields to ensure they're not lost
+            status: 'submitted',
+            submittedAt: window.app.data.submittedAt,
+            submittedBy: window.app.data.submittedBy
         };
 
         console.log('✅ Submitting occasion with status:', submissionData.status);
@@ -2846,15 +2844,15 @@ async function submitOccasion() {
             // Clear draft data
             localStorage.removeItem(CONFIG.STORAGE_KEYS.DRAFT_DATA);
 
-            // Clear any saved occasion ID to prevent reload
+            // Clear any saved occasion ID and localStorage to prevent reload
             if (window.app && window.app.data) {
                 delete window.app.data.id;
             }
+            localStorage.removeItem('rlc_v2_current_session');
 
-            // Redirect to home page after successful submission
-            // Use replace() to remove from history and ensure clean navigation
-            const baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-            window.location.replace(baseUrl + '/index.html');
+            // Redirect to landing page (index.html) after successful submission
+            // Use replace() to remove from history and prevent back button issues
+            window.location.replace('https://wewg24.github.io/rlc-bingo-manager-v2/');
         } else {
             // Re-enable button on error
             if (submitBtn) {
