@@ -92,14 +92,23 @@ function doPost(e) {
 
     // Handle different actions
     if (data.action === 'saveOccasion' || data.action === 'save' || data.action === 'save-occasion') {
+      console.log('🔍 SAVE ACTION RECEIVED');
+      console.log('📥 data.status parameter:', data.status);
+      console.log('📥 data.submittedAt parameter:', data.submittedAt);
+      console.log('📥 data.submittedBy parameter:', data.submittedBy);
+
       // For form data, the occasion data might be in the main object
       const occasionData = data.data ? data.data : data;
+      console.log('📥 occasionData type before parsing:', typeof occasionData);
+
       // Also extract status fields if sent separately
       const statusFields = {
         status: data.status,
         submittedAt: data.submittedAt,
         submittedBy: data.submittedBy
       };
+      console.log('📥 statusFields object:', statusFields);
+
       return handleSaveOccasionV2(occasionData, statusFields);
     }
 
@@ -1095,10 +1104,14 @@ function handleSaveOccasionV2(occasionData, statusFields) {
     // Ensure occasionData is an object
     if (typeof occasionData === 'string') {
       try {
+        console.log('🔄 Parsing occasionData from JSON string...');
         occasionData = JSON.parse(occasionData);
+        console.log('✅ Parsed successfully. Status in parsed data:', occasionData.status || 'MISSING');
       } catch (e) {
         console.log('Could not parse occasion data as JSON, treating as form data');
       }
+    } else {
+      console.log('⚠️ occasionData is already an object, status:', occasionData.status || 'MISSING');
     }
 
     // Get the existing System folder and create year-based organization like Photos
@@ -1117,25 +1130,31 @@ function handleSaveOccasionV2(occasionData, statusFields) {
 
     // Explicitly add status fields if provided separately (fix for status field loss issue)
     if (statusFields) {
+      console.log('📝 Applying statusFields to occasionData...');
       if (statusFields.status) {
         occasionData.status = statusFields.status;
         console.log('✅ Explicitly set status from separate parameter:', statusFields.status);
       }
       if (statusFields.submittedAt) {
         occasionData.submittedAt = statusFields.submittedAt;
+        console.log('✅ Set submittedAt:', statusFields.submittedAt);
       }
       if (statusFields.submittedBy) {
         occasionData.submittedBy = statusFields.submittedBy;
+        console.log('✅ Set submittedBy:', statusFields.submittedBy);
       }
+    } else {
+      console.log('⚠️ No statusFields provided');
     }
 
     console.log('Processing occasion with ID:', occasionId);
-    console.log('✅ Backend received status field:', occasionData.status || 'MISSING');
+    console.log('🔍 FINAL status before saving:', occasionData.status || 'MISSING');
     console.log('📥 Backend received root-level fields:', Object.keys(occasionData).filter(k => !k.startsWith('_')));
 
     // Create individual occasion file in year folder
     const occasionFileName = occasionId + '.json';
     const occasionContent = JSON.stringify(occasionData, null, 2);
+    console.log('💾 About to save file with status:', JSON.parse(occasionContent).status || 'MISSING');
 
     // Check if file exists in year folder
     const existingFile = getFileInFolder(yearFolder, occasionFileName);
@@ -2483,7 +2502,8 @@ function handleUpdatePullTabGame(gameIndex, gameData) {
       form: gameData.form || pullTabsLibrary.games[index].form,
       price: parseFloat(gameData.price) || pullTabsLibrary.games[index].price,
       count: parseInt(gameData.count) || pullTabsLibrary.games[index].count,
-      idealProfit: parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit,
+      idealProfit: parseFloat(gameData.idealProfit) || parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit,
+      status: gameData.status || pullTabsLibrary.games[index].status,
       url: gameData.url !== undefined ? gameData.url : pullTabsLibrary.games[index].url,
       lastModified: new Date().toISOString()
     };
