@@ -75,13 +75,7 @@ class CrudOperations {
      */
     async updatePullTabGame(gameIndex, gameData) {
         try {
-            console.log('=== FRONTEND UPDATE PULL-TAB GAME DEBUG ===');
-            console.log('Game Index:', gameIndex);
-            console.log('Raw gameData:', gameData);
-            console.log('gameData.idealProfit:', gameData.idealProfit);
-            console.log('typeof gameData.idealProfit:', typeof gameData.idealProfit);
-            console.log('JSON.stringify(gameData):', JSON.stringify(gameData));
-            console.log('Encoded data:', encodeURIComponent(JSON.stringify(gameData)));
+            console.log('Updating pull-tab game:', gameIndex, gameData);
 
             const url = `${CONFIG.API_URL}?action=update-pull-tab-game`;
             const result = await this.adminInterface.apiService.jsonpRequest(
