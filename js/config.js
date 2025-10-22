@@ -2,7 +2,7 @@
 // V2.0.0 - Enhanced with new financial tracking structure
 
 window.CONFIG = {
-    API_URL: 'https://script.google.com/macros/s/AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbzHKX_QV5wrRBkGRPyHr4Bm06jErp-ilNQ55R5etIuOkQuA4aQKRwD8e-Q8AE3dM2wC9Q/exec',
     APP_NAME: 'RLC Bingo Manager V2',
     VERSION: '2.3.18',
 

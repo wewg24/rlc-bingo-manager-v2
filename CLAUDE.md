@@ -12,17 +12,16 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA/exec
-- **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/16
-- **Deployment**: Version 16 (Web App - 2025-10-22 2:54 PM) - v2.3.18.1 - Fix pull-tab idealProfit update
-- **Deployment ID**: `AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA`
-- **Note**: Backend code updated via `clasp push`, then deployment updated via Google Apps Script editor
+- **Web App URL**: https://script.google.com/macros/s/AKfycbzHKX_QV5wrRBkGRPyHr4Bm06jErp-ilNQ55R5etIuOkQuA4aQKRwD8e-Q8AE3dM2wC9Q/exec
+- **Deployment**: Latest (Web App - 2025-10-22) - v2.3.18.1 - Fix pull-tab idealProfit update (NEW DEPLOYMENT)
+- **Deployment ID**: `AKfycbzHKX_QV5wrRBkGRPyHr4Bm06jErp-ilNQ55R5etIuOkQuA4aQKRwD8e-Q8AE3dM2wC9Q`
+- **Note**: Backend code updated via `clasp push`, then NEW deployment created (old deployment was corrupted)
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
 - **Timezone**: America/Chicago
 - **Deploy Process**:
   1. `clasp push` to upload Code.js + appsscript.json
-  2. Deploy → Manage deployments → Edit existing Web App deployment (update to latest version)
+  2. Deploy → **New deployment** → Web app (create fresh deployment, don't reuse broken ones)
   3. **IMPORTANT**: Must use Web App deployment (NOT Library deployment)
 
 ## V2 JSON Format Specification
@@ -209,14 +208,20 @@ Test V2 with:
 1. Emergency restoration to deployment @9 (working version from commit 3cfb346)
 2. Applied pull-tab update fixes to local Code.js
 3. Pushed fixes to Google Apps Script via `clasp push`
-4. Created deployment @16 with fixed Code.js (2025-10-22 2:54 PM)
-5. Updated frontend config.js to point to deployment @16
+4. Attempted to update deployment @12 → Failed (deployment ID was corrupted, returned 404)
+5. Created **NEW deployment** with fresh deployment ID (not @16, completely new)
+6. Updated frontend config.js to point to new deployment
 
 **Final Status:**
-- ✅ Dashboard restored and working (deployment @9 → @16)
+- ✅ Dashboard restored and working (new fresh deployment)
 - ✅ Backend Code.js fixed with idealProfit/profitMargin/costBasis recalculation
 - ✅ Frontend api-service.js has jsonpRequest() method restored
 - ✅ Pull-tab library update functionality should now work end-to-end
+
+**Important Discovery:**
+- Deployment ID `AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA` was corrupted
+- Updating existing deployment (@12 → @16) kept the same broken deployment ID
+- Solution: Create **NEW deployment** with entirely new deployment ID
 
 **Important Lessons:**
 - `clasp push` uploads code but doesn't deploy it - must run `clasp deploy` or create deployment via editor
