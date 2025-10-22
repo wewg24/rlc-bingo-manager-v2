@@ -173,6 +173,56 @@ Test V2 with:
 
 ## Recent Changes (2025-10-22)
 
+### v2.3.18.1 - CRITICAL: Application Restore and Pull-Tab Update Fix
+
+#### Emergency Restoration
+
+**Issue**: Dashboard completely broken with "JSONP request failed" errors after multiple failed deployment attempts
+
+**Root Cause**:
+1. Local Code.js file never received the pull-tab update fixes from deployments @11 and @12
+2. Deployment @12 was returning 404 errors despite existing in clasp deployments list
+3. Debug logging attempts broke the application completely
+
+**Solution**:
+1. **Frontend Restoration**: Restored config.js to use deployment @9 (last known working version from commit 3cfb346)
+   - Deployment @9 URL: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
+   - This restores basic dashboard functionality immediately
+
+2. **Backend Fix**: Applied proper pull-tab update fixes to local Code.js file:
+   - Fixed field name bug: `gameData.profit` → `gameData.idealProfit` (line 2483)
+   - Removed spread operator that preserved old calculated fields (line 2481)
+   - Added explicit recalculation of profitMargin and costBasis (lines 2486-2487)
+   - Rebuilt game object explicitly to avoid stale data (lines 2489-2502)
+
+3. **Deployment**: Pushed fixed Code.js to Google Apps Script via `clasp push`
+
+**Files Modified:**
+- **js/config.js** (line 5): Restored API_URL to deployment @9
+- **Code.js** (lines 2480-2502): Applied pull-tab update fixes
+
+**Git Commits:**
+- 5c2fa8f: Restore API_URL to deployment @9 (last known working version)
+- 60b6107: Fix pull-tab update: correct field name and recalculate profitMargin/costBasis
+
+**Next Steps for User:**
+1. Hard refresh admin dashboard (Ctrl+Shift+R)
+2. Verify dashboard loads correctly with deployment @9
+3. Once confirmed working, create new Google Apps Script deployment with fixed Code.js:
+   - Open Google Apps Script editor
+   - Deploy → New deployment → Web app
+   - Description: "v2.3.18.1 - Fix pull-tab idealProfit update"
+4. Update config.js with new deployment URL
+5. Test pull-tab library update functionality
+
+**Important Lessons:**
+- `clasp push` uploads code but doesn't deploy it - must run `clasp deploy` or create deployment via editor
+- Always verify deployment URLs are accessible before updating frontend
+- Never add debug logging to production code - test locally first
+- Keep track of last known working deployment for quick rollback
+
+---
+
 ### v2.3.18 - Comprehensive UX Improvements and Bug Fixes
 
 #### Issues Fixed
