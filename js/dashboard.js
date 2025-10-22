@@ -124,8 +124,9 @@ class Dashboard {
         // api-service.js transforms backend data to flat structure:
         // {id, date, sessionType, lionInCharge, lionPullTabs, totalPlayers, netProfit, totalOverShort, status}
 
-        // Date
-        const formattedDate = new Date(occasion.date).toLocaleDateString();
+        // Date - format without timezone conversion to avoid off-by-one errors
+        const dateParts = occasion.date.split('-');
+        const formattedDate = dateParts.length === 3 ? `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}` : occasion.date;
 
         // Session (convert code to name)
         const sessionType = occasion.sessionType || 'Unknown';

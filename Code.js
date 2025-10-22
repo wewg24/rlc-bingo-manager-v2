@@ -1089,15 +1089,22 @@ function createTestOccasion() {
  */
 function handleSaveOccasionV2(occasionData, statusFields) {
   try {
-    console.log('handleSaveOccasionV2 called with:', occasionData);
-    console.log('Status fields parameter:', statusFields);
+    console.log('🔍 handleSaveOccasionV2 called');
+    console.log('🔍 occasionData type:', typeof occasionData);
+    console.log('🔍 occasionData is string?:', typeof occasionData === 'string');
+    console.log('🔍 Status fields parameter:', statusFields);
 
     // Ensure occasionData is an object
     if (typeof occasionData === 'string') {
+      console.log('🔍 Parsing occasionData from JSON string...');
       try {
         occasionData = JSON.parse(occasionData);
+        console.log('🔍 After parsing - status field present:', 'status' in occasionData);
+        console.log('🔍 After parsing - status value:', occasionData.status);
+        console.log('🔍 After parsing - root keys:', Object.keys(occasionData).join(', '));
       } catch (e) {
-        console.log('Could not parse occasion data as JSON, treating as form data');
+        console.log('❌ Could not parse occasion data as JSON, treating as form data');
+        console.log('❌ Parse error:', e.toString());
       }
     }
 
@@ -1115,8 +1122,14 @@ function handleSaveOccasionV2(occasionData, statusFields) {
     occasionData.created = occasionData.created || new Date().toISOString();
     occasionData.modified = new Date().toISOString();
 
+    console.log('🔍 BEFORE explicit status setting - status value:', occasionData.status);
+
     // Explicitly add status fields if provided separately (fix for status field loss issue)
     if (statusFields) {
+      console.log('🔍 statusFields exists:', !!statusFields);
+      console.log('🔍 statusFields.status exists:', !!statusFields.status);
+      console.log('🔍 statusFields.status value:', statusFields.status);
+
       if (statusFields.status) {
         occasionData.status = statusFields.status;
         console.log('✅ Explicitly set status from separate parameter:', statusFields.status);
@@ -1127,15 +1140,27 @@ function handleSaveOccasionV2(occasionData, statusFields) {
       if (statusFields.submittedBy) {
         occasionData.submittedBy = statusFields.submittedBy;
       }
+    } else {
+      console.log('⚠️ statusFields parameter is null/undefined');
     }
 
+    console.log('🔍 AFTER explicit status setting - status value:', occasionData.status);
+    console.log('🔍 AFTER explicit status setting - "status" in occasionData:', 'status' in occasionData);
     console.log('Processing occasion with ID:', occasionId);
     console.log('✅ Backend received status field:', occasionData.status || 'MISSING');
     console.log('📥 Backend received root-level fields:', Object.keys(occasionData).filter(k => !k.startsWith('_')));
 
     // Create individual occasion file in year folder
     const occasionFileName = occasionId + '.json';
+
+    console.log('🔍 RIGHT BEFORE JSON.stringify - status value:', occasionData.status);
+    console.log('🔍 RIGHT BEFORE JSON.stringify - "status" in occasionData:', 'status' in occasionData);
+    console.log('🔍 RIGHT BEFORE JSON.stringify - root keys:', Object.keys(occasionData).join(', '));
+
     const occasionContent = JSON.stringify(occasionData, null, 2);
+
+    console.log('🔍 AFTER JSON.stringify - first 500 chars of content:', occasionContent.substring(0, 500));
+    console.log('🔍 AFTER JSON.stringify - content includes "status":', occasionContent.includes('"status"'));
 
     // Check if file exists in year folder
     const existingFile = getFileInFolder(yearFolder, occasionFileName);
