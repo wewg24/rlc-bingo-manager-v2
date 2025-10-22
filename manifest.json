@@ -1,26 +1,26 @@
 {
-  "name": "RLC Bingo Manager",
-  "short_name": "RLC Bingo",
+  "name": "RLC Bingo Manager V2",
+  "short_name": "RLC Bingo V2",
   "description": "Complete bingo occasion management system",
-  "start_url": "/rlc-bingo-manager/",
-  "scope": "/rlc-bingo-manager/",
+  "start_url": "/rlc-bingo-manager-v2/",
+  "scope": "/rlc-bingo-manager-v2/",
   "display": "standalone",
   "background_color": "#2c3e50",
   "theme_color": "#3498db",
   "orientation": "any",
   "icons": [
     {
-      "src": "/rlc-bingo-manager/assets/icons/icon-192.png",
+      "src": "/rlc-bingo-manager-v2/assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/rlc-bingo-manager/assets/icons/icon-512.png",
+      "src": "/rlc-bingo-manager-v2/assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/rlc-bingo-manager/assets/icons/icon-50.png",
+      "src": "/rlc-bingo-manager-v2/assets/icons/icon-50.png",
       "sizes": "50x50",
       "type": "image/png"
     }

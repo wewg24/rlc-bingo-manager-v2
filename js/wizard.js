@@ -1006,29 +1006,23 @@ function savePullTabs() {
         }
 
         if (gameName && gameName !== '' && gameName !== 'No Game') {
-            // Get values from actual table cells
-            const ticketPriceCell = row.querySelector('.ticket-price-cell');
-            const ticketsCell = row.querySelector('.tickets-cell');
+            // Get values from inputs (all fields are now editable)
+            const ticketPriceInput = row.querySelector('.ticket-price-input');
+            const ticketsInput = row.querySelector('.tickets-input');
+            const idealInput = row.querySelector('.ideal-input');
+            const prizesInput = row.querySelector('.prizes-input');
+
+            // Get values from cells (calculated/display fields)
             const salesCell = row.querySelector('.sales-cell');
-            const idealCell = row.querySelector('.ideal-cell');
-            const prizesCell = row.querySelector('.prizes-cell');
             const netCell = row.querySelector('.net-cell');
             const checkPayment = row.querySelector('.paid-by-check')?.checked || false;
 
-            // For custom games, get values from inputs
-            const ticketPriceInput = row.querySelector('.ticket-price-input');
-            const ticketsInput = row.querySelector('.tickets-input');
-            const prizesInput = row.querySelector('.prizes-input');
-
-            const price = ticketPriceInput ? parseFloat(ticketPriceInput.value) || 0 :
-                         parseFloat(ticketPriceCell?.textContent?.replace('$', '')) || 0;
-            const tickets = ticketsInput ? parseInt(ticketsInput.value) || 0 :
-                           parseInt(ticketsCell?.textContent) || 0;
+            // Read all values (now all from inputs)
+            const price = parseFloat(ticketPriceInput?.value) || 0;
+            const tickets = parseInt(ticketsInput?.value) || 0;
             const sales = parseFloat(salesCell?.textContent?.replace('$', '')) || 0;
-            const ideal = idealCell?.textContent === 'N/A' ? 0 :
-                         parseFloat(idealCell?.textContent?.replace('$', '')) || 0;
-            const prizes = prizesInput ? parseFloat(prizesInput.value) || 0 :
-                          parseFloat(prizesCell?.textContent?.replace('$', '')) || 0;
+            const ideal = parseFloat(idealInput?.value) || 0;
+            const prizes = parseFloat(prizesInput?.value) || 0;
             const net = parseFloat(netCell?.textContent?.replace('$', '')) || 0;
 
             console.log(`Saving game: ${gameName}, Price: ${price}, Tickets: ${tickets}, Sales: ${sales}, Ideal: ${ideal}, Prizes: ${prizes}, Net: ${net}, SE: ${isSpecialEvent}`);
@@ -1836,45 +1830,84 @@ async function loadPullTabs() {
 
                 // Add rows for each saved pull-tab
                 window.app.data.pullTabs.forEach((pt, index) => {
-                    // Add a new row
-                    if (typeof addPullTabRow === 'function') {
+                    // Determine if this is a custom game or library game
+                    const isLibraryGame = window.pullTabLibrary && window.pullTabLibrary.some(
+                        game => game.identifier === pt.gameName || game.name === pt.gameName
+                    );
+
+                    // Add appropriate row type
+                    if (isLibraryGame && typeof addPullTabRow === 'function') {
+                        // Library game - use standard row
                         addPullTabRow();
+                    } else if (typeof addSpecialEventRow === 'function') {
+                        // Custom game - use custom row
+                        addSpecialEventRow();
+                    } else {
+                        console.warn('Cannot add row for pull-tab:', pt.gameName);
+                        return;
                     }
 
                     // Populate the row that was just added
                     const row = pullTabsBody.rows[pullTabsBody.rows.length - 1]; // Get the last row (just added)
                     if (row) {
-                        // Set game name in dropdown
-                        const select = row.querySelector('.pulltab-select');
-                        if (select) {
-                            select.value = pt.gameName || '';
-                            // Trigger selection to populate cells
-                            if (pt.gameName && typeof handlePullTabSelection === 'function') {
-                                handlePullTabSelection(select);
+                        if (isLibraryGame) {
+                            // LIBRARY GAME - populate dropdown and trigger selection
+                            const select = row.querySelector('.pulltab-select');
+                            if (select) {
+                                select.value = pt.gameName || '';
+                                // Trigger selection to populate cells
+                                if (pt.gameName && typeof handlePullTabSelection === 'function') {
+                                    handlePullTabSelection(select);
+                                }
+                            }
+                        } else {
+                            // CUSTOM GAME - populate text input and editable fields
+                            const customNameInput = row.querySelector('.custom-game-name');
+                            if (customNameInput) {
+                                customNameInput.value = pt.gameName || '';
+                            }
+
+                            // Set ticket price
+                            const ticketPriceInput = row.querySelector('.ticket-price-input');
+                            if (ticketPriceInput) {
+                                ticketPriceInput.value = pt.price || 1;
+                            }
+
+                            // Set tickets
+                            const ticketsInput = row.querySelector('.tickets-input');
+                            if (ticketsInput) {
+                                ticketsInput.value = pt.tickets || 0;
+                            }
+
+                            // Trigger calculation to populate sales and net
+                            if (typeof calculateCustomGameTotals === 'function' && ticketsInput) {
+                                calculateCustomGameTotals(ticketsInput);
                             }
                         }
 
-                        // Set serial number
+                        // Set serial number (both types)
                         const serialInput = row.querySelector('.serial-input');
                         if (serialInput) serialInput.value = pt.serialNumber || '';
 
-                        // Set prizes paid
+                        // Set prizes paid (both types)
                         const prizesInput = row.querySelector('.prizes-input');
                         if (prizesInput) {
                             prizesInput.value = pt.prizesPaid || 0;
                             // Trigger recalculation
-                            if (typeof recalculateNetProfit === 'function') {
+                            if (isLibraryGame && typeof recalculateNetProfit === 'function') {
                                 recalculateNetProfit(prizesInput);
+                            } else if (!isLibraryGame && typeof calculateCustomGameTotals === 'function') {
+                                calculateCustomGameTotals(prizesInput);
                             }
                         }
 
-                        // Set special event checkbox
+                        // Set special event checkbox (both types)
                         const seCheckbox = row.querySelector('.se-checkbox');
                         if (seCheckbox) {
                             seCheckbox.checked = pt.isSpecialEvent || false;
                         }
 
-                        // Set check payment checkbox
+                        // Set check payment checkbox (both types)
                         const checkPayment = row.querySelector('.paid-by-check');
                         if (checkPayment) {
                             checkPayment.checked = pt.checkPayment || false;
@@ -1888,6 +1921,30 @@ async function loadPullTabs() {
                 }
 
                 console.log('Loaded', window.app.data.pullTabs.length, 'pull-tab rows');
+            }
+        }
+
+        // Load Pull-Tab Drawer inputs (located on this step)
+        if (window.app?.data?.moneyCount) {
+            const pullTabData = window.app.data.moneyCount.pullTab || window.app.data.moneyCount.pulltab;
+            if (pullTabData) {
+                Object.entries(pullTabData).forEach(([key, value]) => {
+                    // Skip 'total' key since it's calculated
+                    if (key === 'total') return;
+
+                    // Load into pull-tab drawer inputs
+                    const input = document.getElementById(`pt-drawer-${key}`);
+                    if (input) {
+                        input.value = value || 0;
+                    }
+                });
+
+                // Calculate drawer total to update displays
+                if (typeof calculatePullTabDrawer === 'function') {
+                    calculatePullTabDrawer();
+                }
+
+                console.log('Loaded pull-tab drawer data');
             }
         }
 
@@ -2127,10 +2184,10 @@ function addPullTabRow() {
             </select>
         </td>
         <td><input type="text" class="serial-input" placeholder="Serial #"></td>
-        <td class="ticket-price-cell">$0.00</td>
-        <td class="tickets-cell">0</td>
+        <td><input type="number" class="ticket-price-input" min="0" step="0.01" value="1.00" onchange="recalculateLibraryGameTotals(this)" style="width: 60px;"></td>
+        <td><input type="number" class="tickets-input" min="0" value="0" onchange="recalculateLibraryGameTotals(this)" style="width: 60px;"></td>
         <td class="sales-cell">$0.00</td>
-        <td class="ideal-cell">$0.00</td>
+        <td><input type="number" class="ideal-input" min="0" step="1" value="0" onchange="recalculateLibraryGameTotals(this)" style="width: 70px;"></td>
         <td><input type="number" class="prizes-input" min="0" step="1" value="0" onchange="recalculateNetProfit(this)" style="width: 70px;"></td>
         <td class="net-cell">$0.00</td>
         <td><input type="checkbox" class="paid-by-check" title="Paid by Check"></td>
@@ -2322,7 +2379,7 @@ function addSpecialEventRow() {
         <td><input type="number" class="ticket-price-input" min="0" step="0.01" value="1.00" onchange="calculateCustomGameTotals(this)" style="width: 60px;"></td>
         <td><input type="number" class="tickets-input" min="0" value="0" onchange="calculateCustomGameTotals(this)" style="width: 60px;"></td>
         <td class="sales-cell">$0.00</td>
-        <td class="ideal-cell">N/A</td>
+        <td><input type="number" class="ideal-input" min="0" step="1" value="0" onchange="calculateCustomGameTotals(this)" style="width: 70px;"></td>
         <td><input type="number" class="prizes-input" min="0" step="1" value="0" onchange="calculateCustomGameTotals(this)" style="width: 60px;"></td>
         <td class="net-cell">$0.00</td>
         <td><input type="checkbox" class="paid-by-check" title="Paid by Check"></td>
@@ -3093,6 +3150,40 @@ function recalculateNetProfit(input) {
     calculatePullTabTotals();
 }
 
+function recalculateLibraryGameTotals(input) {
+    const row = input.closest('tr');
+    if (!row) return;
+
+    const ticketPriceInput = row.querySelector('.ticket-price-input');
+    const ticketsInput = row.querySelector('.tickets-input');
+    const salesCell = row.querySelector('.sales-cell');
+    const idealInput = row.querySelector('.ideal-input');
+    const prizesInput = row.querySelector('.prizes-input');
+    const netCell = row.querySelector('.net-cell');
+
+    // Calculate sales
+    const price = parseFloat(ticketPriceInput?.value) || 0;
+    const tickets = parseInt(ticketsInput?.value) || 0;
+    const sales = price * tickets;
+
+    // Update sales display
+    if (salesCell) {
+        salesCell.textContent = `$${sales.toFixed(2)}`;
+    }
+
+    // Calculate net profit
+    const prizes = parseFloat(prizesInput?.value) || 0;
+    const net = sales - prizes;
+
+    // Update net display
+    if (netCell) {
+        netCell.textContent = `$${net.toFixed(2)}`;
+    }
+
+    // Recalculate totals
+    calculatePullTabTotals();
+}
+
 // Make functions globally accessible for inline onclick handlers
 window.addPullTabRow = addPullTabRow;
 window.addSpecialEventRow = addSpecialEventRow;
@@ -3104,6 +3195,7 @@ window.updateGamePrizesManual = updateGamePrizesManual;
 window.toggleGameNotPlayed = toggleGameNotPlayed;
 window.editGameRow = editGameRow;
 window.recalculateNetProfit = recalculateNetProfit;
+window.recalculateLibraryGameTotals = recalculateLibraryGameTotals;
 
 // Update game prizes with auto-calculation of Per Winner
 function updateGamePrizesNew(gameIndex) {

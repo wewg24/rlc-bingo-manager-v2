@@ -47,10 +47,16 @@ class Dashboard {
                                 Review and manage bingo occasions. All occasions are categorized by status below.
                             </p>
                         </div>
-                        <button class="btn secondary" onclick="window.adminInterface.dashboard.rebuildIndex()"
-                                style="white-space: nowrap;">
-                            🔄 Rebuild Index
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn success" onclick="window.open('occasion.html', '_blank')"
+                                    style="white-space: nowrap; font-weight: 600;">
+                                ➕ Add New Occasion
+                            </button>
+                            <button class="btn secondary" onclick="window.adminInterface.dashboard.rebuildIndex()"
+                                    style="white-space: nowrap;">
+                                🔄 Rebuild Index
+                            </button>
+                        </div>
                     </div>
 
                     ${this.renderReviewSection('🔵 Draft Occasions', draftOccasions, 'draft')}

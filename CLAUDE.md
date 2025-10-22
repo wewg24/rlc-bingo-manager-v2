@@ -167,9 +167,156 @@ Test V2 with:
 5. **No data loss** - V2 preserves all V1 information
 
 ## Current Version
-- **Frontend**: v2.3.17
+- **Frontend**: v2.3.18
 - **Backend**: v2.3.12 (no backend changes in this release)
 - **Status**: Production
+
+## Recent Changes (2025-10-22)
+
+### v2.3.18 - Comprehensive UX Improvements and Bug Fixes
+
+#### Issues Fixed
+
+**1. PWA Manifest for App Install**
+- **Issue**: PWA manifest.json pointed to v1 project paths, preventing app installation
+- **Fix**: Updated all paths from `/rlc-bingo-manager/` to `/rlc-bingo-manager-v2/`
+- **Impact**: Users can now install the app on mobile devices using "Add to Home Screen"
+
+**Files Modified:**
+- **manifest.json**: Updated all paths to v2 project
+
+---
+
+**2. Custom Pull-Tab Games Not Loading When Editing Saved Occasions**
+- **Issue**: Custom (non-library) pull-tab games weren't loading when editing saved occasions
+- **Root Cause**: `loadPullTabs()` always called `addPullTabRow()` for ALL games instead of checking if game was in library
+- **Fix**: Added logic to detect library vs custom games and call appropriate row creation function
+  - Library games → `addPullTabRow()` (dropdown with auto-populated fields)
+  - Custom games → `addSpecialEventRow()` (text input with manual fields)
+
+**Files Modified:**
+- **js/wizard.js** (lines 1833-1848): Added isLibraryGame detection logic
+
+**Impact:**
+- Both library and custom games now load correctly when editing saved occasions
+- Proper row type rendered based on game source
+
+---
+
+**3. Pull-Tab Columns Not Editable for Library Games**
+- **Issue**: Library pull-tab games showed readonly cells for $/Ticket, Tickets, and Ideal; Custom games showed "N/A" for Ideal
+- **User Request**: Make ALL columns editable for BOTH library and custom games
+- **Solution**:
+  - Converted readonly cells to editable input fields in `addPullTabRow()` (library games)
+  - Changed "N/A" to editable input in `addSpecialEventRow()` (custom games)
+  - Added `recalculateLibraryGameTotals()` function to recalculate when fields change
+  - Updated `savePullTabs()` to read from new input fields
+
+**Files Modified:**
+- **js/wizard.js** (lines 2161-2178): Changed readonly cells to inputs in addPullTabRow()
+- **js/wizard.js** (lines 2356-2370): Changed "N/A" to input in addSpecialEventRow()
+- **js/wizard.js** (lines 3135-3167): Added recalculateLibraryGameTotals() function
+- **js/wizard.js** (lines 1008-1042): Updated savePullTabs() to read from inputs
+
+**Impact:**
+- Users can now manually adjust $/Ticket, Tickets, Ideal, and Prizes for ANY pull-tab game
+- Calculations update automatically when fields change
+- Flexibility for edge cases where library values don't match actual usage
+
+---
+
+**4. Added "Reload Session Games" Button to Game Results Tab**
+- **User Request**: Add button to reload games after changing session type on Occasion Info tab
+- **Solution**: Added "🔄 Reload Session Games" button that calls `loadGameResults()` to refresh game list
+- **Location**: Top-right of Game Results tab, above the games table
+
+**Files Modified:**
+- **occasion.html** (lines 636-640): Added reload button
+
+**Impact:**
+- Users can reload session games without navigating away and back
+- Streamlined workflow when session type needs to be changed mid-entry
+
+---
+
+**5. Money Count Pull-Tab Drawer Total Not Calculating on First Load**
+- **Issue**: Pull-tab drawer total showed $0.00 when first navigating to Money Count tab
+- **Behavior**: Required navigating away and back for total to calculate correctly
+- **Root Cause**: Pull-tab drawer inputs are on Step 4 (Pull-Tabs tab) but were only being loaded when navigating to Step 5 (Money Count tab)
+- **Solution**: Added pull-tab drawer loading logic to `loadPullTabs()` function so inputs are populated when Step 4 loads
+
+**Files Modified:**
+- **js/wizard.js** (lines 1927-1949): Added drawer input loading to loadPullTabs()
+
+**Impact:**
+- Pull-tab drawer total displays correctly immediately when navigating to Money Count tab
+- No need to navigate away and back to see correct values
+
+---
+
+**6. Status Field Handling in Backend**
+- **Verification**: Backend Code.js already correctly handles status field preservation
+- **Status**: No changes needed - verified implementation from v2.3.8
+- **Note**: User must deploy backend with `clasp push` and rebuild index if issues persist
+
+**Files Verified:**
+- **Code.js** (lines 105-110, 1131-1148, 1185): Status field handling confirmed correct
+
+---
+
+**7. Added "Add New Occasion" Button to Admin Dashboard**
+- **User Request**: Add prominent button to navigate to occasion entry screen
+- **Location**: Top-right of Occasions Management section, next to "Rebuild Index" button
+- **Functionality**: Opens `occasion.html` in new tab
+- **Styling**: Success button (green) with ➕ icon and bold text
+
+**Files Modified:**
+- **js/dashboard.js** (lines 50-59): Added button to dashboard header
+
+**Impact:**
+- Quick access to create new occasions from admin dashboard
+- Streamlined workflow for administrators
+
+---
+
+**8. Updated Button Labels Throughout Application**
+- **Changes**:
+  - Removed "📝 Local Draft" button from all tabs (6 instances)
+  - Renamed "💾 Save to Server" to "💾 Save Draft" (6 instances)
+- **Rationale**: Simplified save workflow - only one save button needed per tab
+
+**Files Modified:**
+- **occasion.html** (lines 511-512, 627-628, 670-671, 805-806, 940-941, 1030-1032): Updated all button labels
+
+**Impact:**
+- Clearer save workflow with single "Save Draft" button per tab
+- Reduced confusion between local vs server saves
+
+---
+
+#### Version Updates
+
+**Files Modified:**
+- **js/config.js** (line 7): VERSION = '2.3.18'
+- **admin.html** (line 49): Display version (v2.3.18)
+- **admin.html** (lines 130-139): Script tag versions (v2.3.18)
+- **occasion.html** (line 429): Display version (v2.3.18)
+- **occasion.html** (lines 1180-1189): Script tag versions (v2.3.18)
+
+---
+
+#### Summary
+
+This release focuses on user experience improvements and bug fixes based on testing feedback:
+- Fixed 8 distinct issues affecting occasion entry and admin workflows
+- Improved editability and flexibility of pull-tab data entry
+- Streamlined button labels and save workflow
+- Enhanced app installation capability with PWA manifest fix
+- Verified status field handling in backend (already correct)
+
+**Deployment:**
+1. Frontend: `git add`, `git commit`, `git push` to deploy to GitHub Pages
+2. Backend: No changes needed (v2.3.12 remains current)
 
 ## Recent Changes (2025-10-10)
 

@@ -426,7 +426,7 @@
         <header class="app-header">
             <div class="header-content">
                 <h1>RLC Bingo Manager</h1>
-                <p style="margin: 0; font-size: 14px; opacity: 0.8;">Occasion Entry <span style="font-size: 0.85em; opacity: 0.6;">(v2.3.17)</span></p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.8;">Occasion Entry <span style="font-size: 0.85em; opacity: 0.6;">(v2.3.18)</span></p>
                 <div class="header-controls">
                     <button id="theme-toggle" class="icon-button" aria-label="Toggle theme">
                         <span class="theme-icon">🌙</span>
@@ -508,8 +508,7 @@
 
                 <!-- Save Buttons -->
                 <div class="tab-footer" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button class="button secondary" onclick="saveDraft()">📝 Local Draft</button>
-                    <button class="button primary" onclick="saveToBackend()">💾 Save to Server</button>
+                    <button class="button primary" onclick="saveToBackend()">💾 Save Draft</button>
                 </div>
             </div>
 
@@ -625,14 +624,18 @@
 
                 <!-- Save Buttons -->
                 <div class="tab-footer" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button class="button secondary" onclick="saveDraft()">📝 Local Draft</button>
-                    <button class="button primary" onclick="saveToBackend()">💾 Save to Server</button>
+                    <button class="button primary" onclick="saveToBackend()">💾 Save Draft</button>
                 </div>
             </div>
 
             <!-- Step 3: Game Results -->
             <div class="wizard-step" id="step-3">
                 <h2>Session Games</h2>
+                <div style="margin-bottom: 1rem; display: flex; justify-content: flex-end;">
+                    <button class="button secondary" onclick="loadGameResults()" style="font-size: 0.9em;">
+                        🔄 Reload Session Games
+                    </button>
+                </div>
                 <div class="form-section">
                     <table class="data-table">
                         <thead>
@@ -664,8 +667,7 @@
 
                 <!-- Save Buttons -->
                 <div class="tab-footer" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button class="button secondary" onclick="saveDraft()">📝 Local Draft</button>
-                    <button class="button primary" onclick="saveToBackend()">💾 Save to Server</button>
+                    <button class="button primary" onclick="saveToBackend()">💾 Save Draft</button>
                 </div>
             </div>
 
@@ -800,8 +802,7 @@
 
                 <!-- Save Buttons -->
                 <div class="tab-footer" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button class="button secondary" onclick="saveDraft()">📝 Local Draft</button>
-                    <button class="button primary" onclick="saveToBackend()">💾 Save to Server</button>
+                    <button class="button primary" onclick="saveToBackend()">💾 Save Draft</button>
                 </div>
             </div>
 
@@ -936,8 +937,7 @@
 
                 <!-- Save Buttons -->
                 <div class="tab-footer" style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button class="button secondary" onclick="saveDraft()">📝 Local Draft</button>
-                    <button class="button primary" onclick="saveToBackend()">💾 Save to Server</button>
+                    <button class="button primary" onclick="saveToBackend()">💾 Save Draft</button>
                 </div>
             </div>
 
@@ -1028,10 +1028,7 @@
                             Submit Occasion
                         </button>
                         <button class="button primary" onclick="saveToBackend()">
-                            💾 Save to Server
-                        </button>
-                        <button class="button secondary" onclick="saveDraft()">
-                            📝 Local Draft
+                            💾 Save Draft
                         </button>
                         <button class="button" onclick="generatePDFReport()">
                             📄 Generate PDF Report
@@ -1180,15 +1177,15 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/config.js?v=2.3.17"></script>
-    <script src="js/loading.js?v=2.3.17"></script>
-    <script src="js/formatConverter.js?v=2.3.17"></script>
-    <script src="js/app.js?v=2.3.17"></script>
-    <script src="js/wizard.js?v=2.3.17"></script>
-    <script src="js/calculations.js?v=2.3.17"></script>
-    <script src="js/reports.js?v=2.3.17"></script>
-    <script src="js/offline.js?v=2.3.17"></script>
-    <script src="js/sync.js?v=2.3.17"></script>
-    <script src="js/init.js?v=2.3.17"></script>
+    <script src="js/config.js?v=2.3.18"></script>
+    <script src="js/loading.js?v=2.3.18"></script>
+    <script src="js/formatConverter.js?v=2.3.18"></script>
+    <script src="js/app.js?v=2.3.18"></script>
+    <script src="js/wizard.js?v=2.3.18"></script>
+    <script src="js/calculations.js?v=2.3.18"></script>
+    <script src="js/reports.js?v=2.3.18"></script>
+    <script src="js/offline.js?v=2.3.18"></script>
+    <script src="js/sync.js?v=2.3.18"></script>
+    <script src="js/init.js?v=2.3.18"></script>
 </body>
 </html>
