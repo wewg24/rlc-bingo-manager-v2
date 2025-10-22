@@ -7,54 +7,6 @@ class ApiService {
         this.adminInterface = adminInterface;
     }
 
-    /**
-     * Generic JSONP request helper
-     * Used by CRUD operations to make API calls
-     */
-    jsonpRequest(url, timeout = 30000) {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-            const script = document.createElement('script');
-
-            // Set up the callback function
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                if (script.parentNode) {
-                    document.body.removeChild(script);
-                }
-                resolve(data);
-            };
-
-            // Add callback parameter to URL if not already present
-            const separator = url.includes('?') ? '&' : '?';
-            const fullUrl = url.includes('callback=')
-                ? url
-                : `${url}${separator}callback=${callbackName}&t=${Date.now()}`;
-
-            // Create the script tag
-            script.src = fullUrl;
-            script.onerror = function() {
-                delete window[callbackName];
-                if (script.parentNode) {
-                    document.body.removeChild(script);
-                }
-                reject(new Error('JSONP request failed'));
-            };
-
-            document.body.appendChild(script);
-
-            // Timeout
-            setTimeout(() => {
-                if (window[callbackName]) {
-                    delete window[callbackName];
-                    if (script.parentNode) {
-                        document.body.removeChild(script);
-                    }
-                    reject(new Error('Request timeout'));
-                }
-            }, timeout);
-        });
-    }
 
     /**
      * Load occasions with JSONP
