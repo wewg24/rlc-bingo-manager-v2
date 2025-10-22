@@ -13,17 +13,17 @@
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
 - **Web App URL**: https://script.google.com/macros/s/AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA/exec
-- **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
-- **Deployment**: Version 12 (Web App - 2025-10-22) - v2.3.18 - Recalculate profitMargin and costBasis on update
+- **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/16
+- **Deployment**: Version 16 (Web App - 2025-10-22 2:54 PM) - v2.3.18.1 - Fix pull-tab idealProfit update
 - **Deployment ID**: `AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA`
-- **Note**: Backend code updated via `clasp push` - existing Web App deployment uses latest code automatically
+- **Note**: Backend code updated via `clasp push`, then deployment updated via Google Apps Script editor
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
 - **Timezone**: America/Chicago
 - **Deploy Process**:
   1. `clasp push` to upload Code.js + appsscript.json
-  2. Deploy → New deployment → Web app (via Google Apps Script editor)
-  3. **IMPORTANT**: Must create Web App deployment (NOT Library deployment)
+  2. Deploy → Manage deployments → Edit existing Web App deployment (update to latest version)
+  3. **IMPORTANT**: Must use Web App deployment (NOT Library deployment)
 
 ## V2 JSON Format Specification
 
@@ -205,15 +205,18 @@ Test V2 with:
 - 5c2fa8f: Restore API_URL to deployment @9 (last known working version)
 - 60b6107: Fix pull-tab update: correct field name and recalculate profitMargin/costBasis
 
-**Next Steps for User:**
-1. Hard refresh admin dashboard (Ctrl+Shift+R)
-2. Verify dashboard loads correctly with deployment @9
-3. Once confirmed working, create new Google Apps Script deployment with fixed Code.js:
-   - Open Google Apps Script editor
-   - Deploy → New deployment → Web app
-   - Description: "v2.3.18.1 - Fix pull-tab idealProfit update"
-4. Update config.js with new deployment URL
-5. Test pull-tab library update functionality
+**Deployment History:**
+1. Emergency restoration to deployment @9 (working version from commit 3cfb346)
+2. Applied pull-tab update fixes to local Code.js
+3. Pushed fixes to Google Apps Script via `clasp push`
+4. Created deployment @16 with fixed Code.js (2025-10-22 2:54 PM)
+5. Updated frontend config.js to point to deployment @16
+
+**Final Status:**
+- ✅ Dashboard restored and working (deployment @9 → @16)
+- ✅ Backend Code.js fixed with idealProfit/profitMargin/costBasis recalculation
+- ✅ Frontend api-service.js has jsonpRequest() method restored
+- ✅ Pull-tab library update functionality should now work end-to-end
 
 **Important Lessons:**
 - `clasp push` uploads code but doesn't deploy it - must run `clasp deploy` or create deployment via editor
