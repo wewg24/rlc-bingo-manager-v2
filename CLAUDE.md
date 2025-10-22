@@ -12,10 +12,10 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA/exec
+- **Web App URL**: https://script.google.com/macros/s/AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA/exec
 - **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
-- **Deployment**: Version 9 (Web App - 2025-10-10) - Uses latest code from clasp push
-- **Deployment ID**: `AKfycbygArMdPT9b8tjpkB7h3k5YioRlc3V9W4UL9wzuhj3Byg8kwfc0RZDBOgb-LDJpxw5DoA`
+- **Deployment**: Version 11 (Web App - 2025-10-22) - v2.3.18 - Fix pull-tab idealProfit field update
+- **Deployment ID**: `AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA`
 - **Note**: Backend code updated via `clasp push` - existing Web App deployment uses latest code automatically
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
@@ -168,7 +168,7 @@ Test V2 with:
 
 ## Current Version
 - **Frontend**: v2.3.18
-- **Backend**: v2.3.12 (no backend changes in this release)
+- **Backend**: v2.3.18 (fixed pull-tab idealProfit field update)
 - **Status**: Production
 
 ## Recent Changes (2025-10-22)
@@ -177,7 +177,27 @@ Test V2 with:
 
 #### Issues Fixed
 
-**1. PWA Manifest for App Install**
+**1. Backend: Pull-Tab Library idealProfit Field Not Saving**
+- **Issue**: When updating pull-tab games in the library, the idealProfit field was saving as the old value instead of the new value
+- **Example**: Updating "Dig Life 200" to "Dig Life 280" with 445 tickets and idealProfit of 165 saved idealProfit as 100 instead
+- **Root Cause**: Backend Code.js line 2505 was reading `gameData.profit` instead of `gameData.idealProfit`
+- **Fix**: Changed line 2505 to read `parseFloat(gameData.idealProfit)` first, then fallback to `gameData.profit`
+- **Deployment**: Required new Google Apps Script deployment (@11) to take effect
+- **Impact**: Pull-tab library updates now correctly save all field values including idealProfit
+
+**Files Modified:**
+- **Code.js** (line 2505): Fixed field name to read idealProfit correctly
+- **js/config.js** (line 5): Updated API_URL to new deployment @11
+- **CLAUDE.md**: Updated deployment information to version 11
+
+**Deployment Notes:**
+- Created new Web App deployment: `AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA`
+- Important: `clasp push` uploads code but doesn't deploy it - must run `clasp deploy` to create new deployment
+- Frontend config.js must be updated to point to new deployment URL
+
+---
+
+**2. PWA Manifest for App Install**
 - **Issue**: PWA manifest.json pointed to v1 project paths, preventing app installation
 - **Fix**: Updated all paths from `/rlc-bingo-manager/` to `/rlc-bingo-manager-v2/`
 - **Impact**: Users can now install the app on mobile devices using "Add to Home Screen"
