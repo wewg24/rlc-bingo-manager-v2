@@ -2481,7 +2481,12 @@ function handleAddPullTabGame(gameData) {
  */
 function handleUpdatePullTabGame(gameIndex, gameData) {
   try {
-    console.log('Updating pull-tab game at index:', gameIndex, 'with data:', gameData);
+    console.log('=== UPDATE PULL-TAB GAME DEBUG ===');
+    console.log('Game Index:', gameIndex);
+    console.log('Raw gameData:', JSON.stringify(gameData));
+    console.log('gameData.idealProfit type:', typeof gameData.idealProfit);
+    console.log('gameData.idealProfit value:', gameData.idealProfit);
+    console.log('parseFloat(gameData.idealProfit):', parseFloat(gameData.idealProfit));
 
     // Load existing pull-tabs library
     let pullTabsLibrary = loadFromJsonFile(CONFIG.PULLTABS_FOLDER, CONFIG.PULLTABS_LIBRARY_FILE);
@@ -2495,18 +2500,42 @@ function handleUpdatePullTabGame(gameIndex, gameData) {
       throw new Error('Invalid game index: ' + gameIndex);
     }
 
-    // Update the game data
+    console.log('Existing game data:', JSON.stringify(pullTabsLibrary.games[index]));
+
+    // Calculate new values
+    const newPrice = parseFloat(gameData.price) || pullTabsLibrary.games[index].price;
+    const newCount = parseInt(gameData.count) || pullTabsLibrary.games[index].count;
+    const newIdealProfit = parseFloat(gameData.idealProfit) || parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit;
+
+    console.log('Calculated newPrice:', newPrice);
+    console.log('Calculated newCount:', newCount);
+    console.log('Calculated newIdealProfit:', newIdealProfit);
+
+    // Recalculate profitMargin and costBasis based on new values
+    const totalSales = newPrice * newCount;
+    const newProfitMargin = totalSales > 0 ? Math.round((newIdealProfit / totalSales) * 1000) / 10 : 0;
+    const newCostBasis = totalSales > 0 ? Math.round(((totalSales - newIdealProfit) / totalSales) * 1000) / 1000 : 0;
+
+    console.log('Calculated profitMargin:', newProfitMargin);
+    console.log('Calculated costBasis:', newCostBasis);
+
+    // Update the game data - rebuild object completely to ensure calculated fields are correct
     pullTabsLibrary.games[index] = {
-      ...pullTabsLibrary.games[index], // Keep existing data
       name: gameData.name || pullTabsLibrary.games[index].name,
-      form: gameData.form || pullTabsLibrary.games[index].form,
-      price: parseFloat(gameData.price) || pullTabsLibrary.games[index].price,
-      count: parseInt(gameData.count) || pullTabsLibrary.games[index].count,
-      idealProfit: parseFloat(gameData.idealProfit) || parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit,
-      status: gameData.status || pullTabsLibrary.games[index].status,
+      form: gameData.form !== undefined ? gameData.form : pullTabsLibrary.games[index].form,
+      price: newPrice,
+      count: newCount,
+      idealProfit: newIdealProfit,
       url: gameData.url !== undefined ? gameData.url : pullTabsLibrary.games[index].url,
+      identifier: pullTabsLibrary.games[index].identifier,
+      profitMargin: newProfitMargin,
+      costBasis: newCostBasis,
+      hasInformationalFlyer: pullTabsLibrary.games[index].hasInformationalFlyer || false,
+      status: gameData.status || pullTabsLibrary.games[index].status,
       lastModified: new Date().toISOString()
     };
+
+    console.log('Updated game data:', JSON.stringify(pullTabsLibrary.games[index]));
 
     pullTabsLibrary.metadata.lastUpdated = new Date().toISOString();
 

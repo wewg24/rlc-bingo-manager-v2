@@ -12,10 +12,10 @@
 - **Project ID**: `1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te`
 - **Script URL**: https://script.google.com/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/edit
 - **Files**: `Code.js` + `appsscript.json` (only these two files)
-- **Web App URL**: https://script.google.com/macros/s/AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA/exec
+- **Web App URL**: https://script.google.com/macros/s/AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA/exec
 - **Library URL**: https://script.google.com/macros/library/d/1z4s9-QMy34Y9DeVKInecGZrcWiZFdm0i2HweSa2Gj47fKF76HclpM4Te/8
-- **Deployment**: Version 11 (Web App - 2025-10-22) - v2.3.18 - Fix pull-tab idealProfit field update
-- **Deployment ID**: `AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA`
+- **Deployment**: Version 12 (Web App - 2025-10-22) - v2.3.18 - Recalculate profitMargin and costBasis on update
+- **Deployment ID**: `AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA`
 - **Note**: Backend code updated via `clasp push` - existing Web App deployment uses latest code automatically
 - **Execute as**: Me (owner)
 - **Access**: Anyone (public web app)
@@ -180,18 +180,24 @@ Test V2 with:
 **1. Backend: Pull-Tab Library idealProfit Field Not Saving**
 - **Issue**: When updating pull-tab games in the library, the idealProfit field was saving as the old value instead of the new value
 - **Example**: Updating "Dig Life 200" to "Dig Life 280" with 445 tickets and idealProfit of 165 saved idealProfit as 100 instead
-- **Root Cause**: Backend Code.js line 2505 was reading `gameData.profit` instead of `gameData.idealProfit`
-- **Fix**: Changed line 2505 to read `parseFloat(gameData.idealProfit)` first, then fallback to `gameData.profit`
-- **Deployment**: Required new Google Apps Script deployment (@11) to take effect
-- **Impact**: Pull-tab library updates now correctly save all field values including idealProfit
+- **Root Cause #1**: Backend Code.js line 2505 was reading `gameData.profit` instead of `gameData.idealProfit`
+- **Root Cause #2**: Line 2511 used spread operator `...pullTabsLibrary.games[index]` which preserved OLD calculated fields (profitMargin: 33.3, costBasis: 0.667) even after updating idealProfit
+- **Fix**:
+  1. Changed line 2508 to read `parseFloat(gameData.idealProfit)` first, then fallback to `gameData.profit`
+  2. Removed spread operator and rebuilt game object explicitly (lines 2523-2536)
+  3. Added recalculation of profitMargin and costBasis based on new idealProfit/price/count (lines 2514-2520)
+- **Deployment**: Required two Google Apps Script deployments (@11, @12) to fully fix the issue
+- **Impact**: Pull-tab library updates now correctly save and recalculate all field values including idealProfit, profitMargin, and costBasis
 
 **Files Modified:**
-- **Code.js** (line 2505): Fixed field name to read idealProfit correctly
-- **js/config.js** (line 5): Updated API_URL to new deployment @11
-- **CLAUDE.md**: Updated deployment information to version 11
+- **Code.js** (lines 2505-2538): Fixed field name reading, removed spread operator, added profitMargin/costBasis recalculation
+- **js/config.js** (line 5): Updated API_URL to new deployment @12
+- **CLAUDE.md**: Updated deployment information to version 12
 
 **Deployment Notes:**
-- Created new Web App deployment: `AKfycby_NwZypSvS-EQJAq-RprITqpgfHtXQ1vTeMpf-C-94dL1bZ5nDh_cvBSFLKYBKgW0pgA`
+- Deployment @11: Fixed idealProfit field reading
+- Deployment @12: Fixed profitMargin/costBasis calculation
+- Final deployment: `AKfycbzs_4bqlp7hqJjLYlHyPnPsJrC4U4yyA50LVCoUTMgwWqac5xKokejD16C0wHBvcxb8FA`
 - Important: `clasp push` uploads code but doesn't deploy it - must run `clasp deploy` to create new deployment
 - Frontend config.js must be updated to point to new deployment URL
 
