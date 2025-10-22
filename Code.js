@@ -2477,14 +2477,27 @@ function handleUpdatePullTabGame(gameIndex, gameData) {
     }
 
     // Update the game data
+    // Recalculate all fields to avoid spread operator preserving old values
+    const newPrice = parseFloat(gameData.price) || pullTabsLibrary.games[index].price;
+    const newCount = parseInt(gameData.count) || pullTabsLibrary.games[index].count;
+    const newIdealProfit = parseFloat(gameData.idealProfit) || parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit;
+
+    const totalSales = newPrice * newCount;
+    const newProfitMargin = totalSales > 0 ? Math.round((newIdealProfit / totalSales) * 1000) / 10 : 0;
+    const newCostBasis = totalSales > 0 ? Math.round(((totalSales - newIdealProfit) / totalSales) * 1000) / 1000 : 0;
+
     pullTabsLibrary.games[index] = {
-      ...pullTabsLibrary.games[index], // Keep existing data
       name: gameData.name || pullTabsLibrary.games[index].name,
-      form: gameData.form || pullTabsLibrary.games[index].form,
-      price: parseFloat(gameData.price) || pullTabsLibrary.games[index].price,
-      count: parseInt(gameData.count) || pullTabsLibrary.games[index].count,
-      idealProfit: parseFloat(gameData.profit) || pullTabsLibrary.games[index].idealProfit,
+      form: gameData.form !== undefined ? gameData.form : pullTabsLibrary.games[index].form,
+      price: newPrice,
+      count: newCount,
+      idealProfit: newIdealProfit,
       url: gameData.url !== undefined ? gameData.url : pullTabsLibrary.games[index].url,
+      identifier: pullTabsLibrary.games[index].identifier,
+      profitMargin: newProfitMargin,
+      costBasis: newCostBasis,
+      hasInformationalFlyer: pullTabsLibrary.games[index].hasInformationalFlyer || false,
+      status: gameData.status || pullTabsLibrary.games[index].status,
       lastModified: new Date().toISOString()
     };
 
